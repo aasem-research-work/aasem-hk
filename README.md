@@ -1,2 +1,1 @@
-# aasem-hk
-Hisaab Kitaab
+# Hisaab Kitaab
