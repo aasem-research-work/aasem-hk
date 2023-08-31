@@ -1,0 +1,10 @@
+<RCC>
+  <qresource prefix="icon">
+    <file alias="Edit">resources/icons/ui-tab--pencil.png</file>
+    <file alias="Filter">resources/icons/binocular.png</file>
+    <file alias="cancel">resources/icons/cross-button.png</file>
+    <file alias="Save">resources/icons/disk-return.png</file>
+    <file alias="delete">resources/icons/minus-circle.png</file>
+    <file alias="add">resources/icons/plus-button.png</file>
+  </qresource>
+</RCC>
