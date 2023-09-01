@@ -56,20 +56,15 @@ pip install pyqt5-tools
 
 
 - Install **Sqlite**: https://www.sqlitetutorial.net/download-install-sqlite/
-- 
-- Install **PyQT5 Editor**:  
+  
+- **PyQT5 Editor**:
+To Install:  
 ```pip install pyqt5-tools```
 
-or open the editor:
+To open the editor:
 ```pyqt5-tools designer```
 
-- Install **PyInstaller**:  
-```pip install PyInstaller```
-
-- Install **Sqlite Studio**:  
-  https://sqlitestudio.pl/
-
-  
+- **PyInstaller**:  
   To Install:  
    ```pip install pyinstaller```
 
@@ -77,6 +72,12 @@ or open the editor:
   ```
   pyinstaller --onefile --windowed main.py
   ```
+
+- Install **Sqlite Studio**:  
+  https://sqlitestudio.pl/
+
+  
+
 
 
   
