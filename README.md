@@ -47,7 +47,7 @@ activate pyqt5
 Install the required packages in the Anaconda Prompt:
 
 ```bash
-conda install pyqt pyqt5-designer  # Add other packages if needed
+pip install PyQt5
 ```
 
 ### 3. for developers (optional)
