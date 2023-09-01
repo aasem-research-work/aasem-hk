@@ -29,7 +29,7 @@ We recommend using Anaconda for managing Python environments. If you haven't ins
 After installing Anaconda, open the Anaconda Prompt and create a new environment called `pyqt5` by running:
 
 ```bash
-conda create --name pyqt5 python=3.x
+conda create --name pyqt5 python=3.8.17
 ```
 
 Activate the environment:
