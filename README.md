@@ -44,8 +44,11 @@ Windows:
 activate pyqt5
 ```
 
-#### PyQt5 Editor for developers (optional)
-https://www.qt.io/download-qt-installer 
+#### for developers (optional)
+- Install **PyQT5 Editor**: https://www.qt.io/download-qt-installer
+- Install **Sqlite**: https://www.sqlitetutorial.net/download-install-sqlite/
+- Install **Sqlite Studio**: https://sqlitestudio.pl/
+  
 ### 3. Install Required Packages
 
 Install the required packages in the Anaconda Prompt:
@@ -56,7 +59,13 @@ conda install pyqt pyqt5-designer  # Add other packages if needed
 
 ### 4. Set Up the Database
 
-Navigate to the `db` directory and run the following command to initialize the SQLite database:
+Navigate to the `db` directory pyt
+
+```bash
+cd db
+```
+
+run the following command to initialize the SQLite database:
 
 ```bash
 sqlite3 mydata.db < initialize.sql
