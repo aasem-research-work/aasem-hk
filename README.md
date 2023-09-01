@@ -43,6 +43,9 @@ Windows:
 ```bash
 activate pyqt5
 ```
+
+#### PyQt5 Editor for developers (optional)
+https://www.qt.io/download-qt-installer 
 ### 3. Install Required Packages
 
 Install the required packages in the Anaconda Prompt:
