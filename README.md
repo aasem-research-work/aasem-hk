@@ -48,8 +48,6 @@ Install the required packages in the Anaconda Prompt:
 
 ```bash
 pip install PyQt5
-pip install PyQt5Designer
-pip install pyqt5-tools
 ```
 
 ### 3. for developers (optional)
@@ -59,11 +57,18 @@ pip install pyqt5-tools
   
 - **PyQT5 Editor**:
 To Install:  
-```pip install pyqt5-tools```
+```
+pip install pyqt5-tools
+pip install PyQt5Designer
+```
 
 To open the editor:
 ```pyqt5-tools designer```
 
+To create shortcut (windows):
+```
+cmd.exe /K activate pyqt5 && "designer.exe"
+```
 - **PyInstaller**:  
   To Install:  
    ```pip install pyinstaller```
