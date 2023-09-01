@@ -48,6 +48,8 @@ Install the required packages in the Anaconda Prompt:
 
 ```bash
 pip install PyQt5
+pip install PyQt5Designer
+pip install pyqt5-tools
 ```
 
 ### 3. for developers (optional)
