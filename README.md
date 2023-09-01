@@ -4,7 +4,7 @@ This project is a shop management system built with Python and PyQt5. It is desi
 
 ## Prerequisites
 
-- Python 3.x
+- Python 3.8
 - SQLite
 - PyQt5
 - PyQt5 Designer (Optional but recommended for UI modifications)
