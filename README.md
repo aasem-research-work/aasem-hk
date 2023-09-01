@@ -34,10 +34,15 @@ conda create --name pyqt5 python=3.8.17
 
 Activate the environment:
 
+Mac/Linux:  
 ```bash
 conda activate pyqt5
 ```
 
+Windows:  
+```bash
+activate pyqt5
+```
 ### 3. Install Required Packages
 
 Install the required packages in the Anaconda Prompt:
