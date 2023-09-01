@@ -55,6 +55,8 @@ conda install pyqt pyqt5-designer  # Add other packages if needed
 - Install **PyQT5 Editor**: https://www.qt.io/download-qt-installer
 - Install **Sqlite**: https://www.sqlitetutorial.net/download-install-sqlite/
 - Install **Sqlite Studio**: https://sqlitestudio.pl/
+- Install py installer ```pip install pyinstaller```
+
   
 
 ### 4. Run the Application
