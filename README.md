@@ -44,42 +44,28 @@ Windows:
 activate pyqt5
 ```
 
-#### for developers (optional)
-- Install **PyQT5 Editor**: https://www.qt.io/download-qt-installer
-- Install **Sqlite**: https://www.sqlitetutorial.net/download-install-sqlite/
-- Install **Sqlite Studio**: https://sqlitestudio.pl/
-  
-### 3. Install Required Packages
-
 Install the required packages in the Anaconda Prompt:
 
 ```bash
 conda install pyqt pyqt5-designer  # Add other packages if needed
 ```
 
-### 4. Set Up the Database
+### 3. for developers (optional)
 
-Navigate to the `db` directory pyt
+- Install **PyQT5 Editor**: https://www.qt.io/download-qt-installer
+- Install **Sqlite**: https://www.sqlitetutorial.net/download-install-sqlite/
+- Install **Sqlite Studio**: https://sqlitestudio.pl/
+  
 
-```bash
-cd db
-```
+### 4. Run the Application
 
-run the following command to initialize the SQLite database:
-
-```bash
-sqlite3 mydata.db < initialize.sql
-```
-
-### 5. Run the Application
-
-Finally, navigate back to the main directory and run:
+Make sure to be in the main directory and run:
 
 ```bash
 python main.py
 ```
 
-This will launch the application. You can now perform CRUD operations on your data.
+This will launch the application. 
 
 ## Contributing
 
@@ -89,6 +75,4 @@ If you would like to contribute, please fork the repository and make changes as 
 
 This project is open-source and available under the MIT License.
 
-## Acknowledgments
 
-- Add any acknowledgments, if any
