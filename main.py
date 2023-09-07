@@ -1,4 +1,6 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem,QLineEdit, QCheckBox, QComboBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem,QLineEdit, QCheckBox, QComboBox, QTreeWidgetItem
+from PyQt5.QtWidgets import QStatusBar
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QWidget, QVBoxLayout, QTreeWidgetItem
 from PyQt5.QtCore import Qt
 from ui_main import Ui_MainWindow
 import sqlite3
@@ -8,6 +10,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
+        self.database="db/sample_computer.db"
         self.global_dictionary={"currentTab":3,
                                 "tab":
                                 [{"tabname":"Deshboard"},
@@ -16,6 +19,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 {"tabname":"Transaction","query":"select * from Transactions_View_Summary","tableWidget":self.tableWidget_transaction},
                                 {"tabname":"Admin"}]
                                 }
+        
+        
         # Create a dictionary mapping the widgets to their respective column indices
         self.dictionary_stakeholder_enrich_form_via_tableWidget = {
             self.lineEdit_Stk_StakeholderID:0,
@@ -53,6 +58,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.lineEdit_inv_PriceSaleLess1:17,
             self.lineEdit_inv_PriceSaleLess2:18
         }
+        
+        self.dictionary_trans_enrich_form_via_treeWidget={
+            self.lineEdit_trans_sale_timestamp:"Timestamp",
+            self.lineEdit_trans_sale_InvoiceNumber:"InvoiceNumber",
+            self.lineEdit_trans_sale_Stakeholder:"StakeholderName",
+            self.lineEdit_trans_sale_TransactionType:"TransactionType",
+            self.lineEdit_trans_sale_trans_id:"TransactionID",
+            self.lineEdit_trans_sale_Item:"ItemName",
+            self.lineEdit_trans_sale_Item_details:"ItemDetails",
+            self.lineEdit_trans_sale_quantity:"Quantity",
+            self.lineEdit_trans_sale_unit:"QuantityUnit",
+            #self.lineEdit_trans_sale_rate,
+            self.lineEdit_trans_sale_cash:"PaymentCash",
+            self.lineEdit_trans_sale_credit:"PaymentCredit"
+            #self.lineEdit_trans_sale_schedule,
+            #self.lineEdit_trans_sale_terms,
+            #self.lineEdit_trans_sale_note
+        }
 
         # Connect the function to the cell click signal
         self.tableWidget_stk.currentCellChanged.connect(lambda: self.enrich_form_via_tableWidget(self.tableWidget_stk, self.dictionary_stakeholder_enrich_form_via_tableWidget))
@@ -77,6 +100,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lineEdit_inv_PricePurchaseLess1.textChanged.connect(self.update_net_purchase_price)
         self.lineEdit_inv_PricePurchaseLess2.textChanged.connect(self.update_net_purchase_price)
 
+
         # search in stakeholder
         self.lineEdit_search_tableWidget_stk.textChanged.connect(lambda: self.search_and_navigate(self.tableWidget_stk, 
                                                                                                   self.lineEdit_search_tableWidget_stk.text()))
@@ -89,23 +113,254 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_search_prev_tableWidget_inv.clicked.connect(lambda: self.search_and_navigate(self.tableWidget_inv, direction='prev'))
         self.pushButton_search_next_tableWidget_inv.clicked.connect(lambda: self.search_and_navigate(self.tableWidget_inv, direction='next'))
 
+        self.pushButton_inv_update.clicked.connect(lambda: self.enrich_tableWidget_via_form(self.tableWidget_inv, self.dictionary_inventory_enrich_form_via_tableWidget))
+        self.pushButton_inv_new.clicked.connect(lambda: self.clearForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv))
+
+        self.pushButton_inv_delete.clicked.connect(lambda: self.delete_record(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv))
+
+        self.toolBox_trans_SalePurchase.currentChanged.connect(self.page_changed)
+
+        #self.treeWidget_trans.itemClicked.connect(self.enrich_form_via_treeWidget)
+        self.treeWidget_trans.itemClicked.connect(self.handle_tree_item_click)
 
         # Initialize the database connection and move to a Tab
-        self.conn = sqlite3.connect("db/sampledb.db")
+        self.conn = sqlite3.connect(self.database)
         self.tabWidget.setCurrentIndex(0)
+        self.page_changed(1)
 
-    def search_and_navigate(self, tableWidget, query=None, direction=None):
+
+
+    def page_changed(self, index):
+        current_widget = self.toolBox_trans_SalePurchase.widget(index)
+        if current_widget == self.page_History:
+            query = '''
+            SELECT
+                strftime('%Y-%m-%d', T.Timestamp) AS Timestamp,
+                T.InvoiceNumber,
+                T.TransactionType,
+                S.StakeholderName, 
+                I.ItemName,
+                T.Quantity, 
+                T.PaymentCash, 
+                T.PaymentCredit
+            FROM 
+                Transactions T
+                LEFT JOIN Stakeholder S ON T.StakeholderID = S.StakeholderID
+                LEFT JOIN Inventory I ON T.ItemID = I.ItemID
+            '''
+            self.make_tree(self.treeWidget_trans, query, self.conn)
+
+    def handle_tree_item_click(self, item):
+        # Initialize an empty list to hold the details
+        clicked_details = []
+        
+        # Traverse up the tree from the clicked item to collect details
+        while item:
+            clicked_details.insert(0, item.text(0))
+            item = item.parent()
+
+        # Prepare the status bar message
+        status_message = ", ".join([f"{detail}" for detail in clicked_details])
+        
+        # Update the status bar
+        self.statusBar().showMessage(status_message)
+        
+        # If it's a Level 2 item, enrich the form
+        if len(clicked_details) == 2:
+            invoice_number = clicked_details[1]
+            
+            # Prepare the query
+            p_query = f'''
+                SELECT
+                strftime('%Y-%m-%d', T.Timestamp) AS Timestamp,
+                T.InvoiceNumber,
+                T.TransactionID,
+                T.TransactionType,
+                S.StakeholderName, 
+                I.ItemName,
+                T.ItemDetails,
+                T.Quantity, 
+                T.QuantityUnit,
+                T.PaymentCash, 
+                T.PaymentCredit
+            FROM 
+                Transactions T
+                LEFT JOIN Stakeholder S ON T.StakeholderID = S.StakeholderID
+                LEFT JOIN Inventory I ON T.ItemID = I.ItemID
+                WHERE T.InvoiceNumber = '{invoice_number}'
+                '''
+            #p_query = f"SELECT * FROM Transactions WHERE InvoiceNumber = '{invoice_number}'"
+            
+            # Call enrich_form_via_treeWidget to populate the form
+            self.enrich_form_via_treeWidget(self.dictionary_trans_enrich_form_via_treeWidget, p_query)
+
+
+    def handle_tree_item_click_old(self, item, column):
+        values = []
+        current_item = item
+        level = 0  # To keep track of the level of the item
+        
+        # Loop to climb up to the root item and collect information
+        while current_item is not None:
+            values.insert(0, current_item.text(0))
+            current_item = current_item.parent()
+            level += 1
+
+        # If it's a Level 3 item, add more details
+        if level == 3:
+            child_count = item.childCount()
+            for i in range(child_count):
+                child_item = item.child(i)
+                values.append(f"{child_item.text(0)}: {child_item.text(1)}")
+
+        display_text = ", ".join(values)
+        self.statusBar().showMessage(display_text)
+
+    def enrich_form_via_treeWidget(self, dictionary_trans_enrich_form_via_treeWidget, p_query):
+        # Initialize an empty dictionary to hold the data
+        data_dict = {}
+        
+        # Execute the SQL query
+        cursor = self.conn.cursor()
+        cursor.execute(p_query)
+        result = cursor.fetchall()
+
+        # If no data is returned, return early
+        if not result:
+            return
+
+        # Get the column names from the cursor description
+        column_names = [desc[0] for desc in cursor.description]
+
+        # Populate the data dictionary
+        for col_name in column_names:
+            data_dict[col_name] = []
+
+        for row in result:
+            for i, value in enumerate(row):
+                data_dict[column_names[i]].append(value)
+
+        # Populate the QLineEdit fields
+        for line_edit, column_name in dictionary_trans_enrich_form_via_treeWidget.items():
+            if column_name in data_dict:
+                # Assume the first row of data should be used to populate the form
+                value = data_dict[column_name][0]
+                line_edit.setText(str(value))
+
+    def make_tree(self, p_treeWidget_trans, p_query, p_conn):
+        try:
+            cursor = p_conn.cursor()
+            cursor.execute(p_query)
+            results = cursor.fetchall()
+
+            # Clear existing items from the tree widget
+            p_treeWidget_trans.clear()
+
+            # Set the column headers
+            p_treeWidget_trans.setHeaderLabels([
+                "Timestamp/Invoice/Details", "Transaction Type", "Stakeholder", 
+                "Item", "Quantity", "Payment Cash", "Payment Credit"
+            ])
+
+            current_timestamp = None
+            current_invoice = None
+            timestamp_item = None
+            invoice_item = None
+
+            for row in results:
+                timestamp, invoice_number, transaction_type, stakeholder_name, item_name, quantity, payment_cash, payment_credit = row
+
+                if timestamp != current_timestamp:
+                    current_timestamp = timestamp
+                    timestamp_item = QTreeWidgetItem(p_treeWidget_trans)
+                    timestamp_item.setText(0, str(timestamp))
+
+                if invoice_number != current_invoice:
+                    current_invoice = invoice_number
+                    invoice_item = QTreeWidgetItem(timestamp_item)
+                    invoice_item.setText(0, str(invoice_number))
+
+                # Create a child_item for the transaction details
+                child_item = QTreeWidgetItem(invoice_item)
+                child_item.setText(0, "Transaction Details")
+                child_item.setText(1, transaction_type)
+                child_item.setText(2, stakeholder_name)
+                child_item.setText(3, item_name)
+                child_item.setText(4, str(quantity))
+                child_item.setText(5, str(payment_cash))
+                child_item.setText(6, str(payment_credit))
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+
+    def delete_record(self, p_dictionary_items, p_tableWidget):
+        # Get list of selected items
+        selected_items = p_tableWidget.selectedItems()
+        
+        # Identify unique rows that are selected
+        selected_rows = set()
+        for item in selected_items:
+            selected_rows.add(item.row())
+        
+        # Sort the row numbers to find the predecessor
+        selected_rows = sorted(list(selected_rows))
+
+        # Store the row number of the first selected row's predecessor
+        predecessor_row = selected_rows[0] - 1 if selected_rows else -1
+        
+        # Sort the row numbers in descending order to avoid shifting issues while deleting
+        selected_rows = sorted(selected_rows, reverse=True)
+        
+        # Delete selected rows from the table widget
+        for row in selected_rows:
+            p_tableWidget.removeRow(row)
+            
+        # Clear the dictionary items
+        for widget in p_dictionary_items.keys():
+            if isinstance(widget, QLineEdit):
+                widget.clear()
+            elif isinstance(widget, QCheckBox):
+                widget.setChecked(False)
+            elif isinstance(widget, QComboBox):
+                widget.setCurrentIndex(0)
+                
+        # Select the predecessor row in the table widget
+        if predecessor_row >= 0:
+            p_tableWidget.selectRow(predecessor_row)
+
+    def clearForm(self, p_dictionary_items, p_calcID_from_tableWidget):
+        # Find the maximum number of rows in the table widget
+        max_rows = p_calcID_from_tableWidget.rowCount()
+        
+        # Assign this value to the first item in the dictionary
+        first_item_key = list(p_dictionary_items.keys())[0]
+        first_item_key.setText(str(max_rows + 1))
+
+        # Clear the rest of the items
+        for widget in list(p_dictionary_items.keys())[1:]:
+            if isinstance(widget, QLineEdit):
+                widget.clear()
+            elif isinstance(widget, QCheckBox):
+                widget.setChecked(False)
+            elif isinstance(widget, QComboBox):
+                widget.setCurrentIndex(0)
+
+    def search_and_navigate(self, tableWidget, query=None, direction=None, Filter=True):
         current_search_index = -1
 
         if query is not None:  # New search query entered
             search_results = []
             for i in range(tableWidget.rowCount()):
+                match_found = False
                 for j in range(tableWidget.columnCount()):
                     item = tableWidget.item(i, j)
                     if item and query.lower() in item.text().lower():
                         search_results.append(i)
+                        match_found = True
                         break  # Exit inner loop as we found a match in this row
-
+                if Filter:
+                    tableWidget.setRowHidden(i, not match_found)
             # Store the search_results and current_search_index in the tableWidget object
             tableWidget.search_results = search_results
             tableWidget.current_search_index = current_search_index
@@ -118,6 +373,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not search_results:
             self.label_search_status_tableWidget_stk.setText("0/0")
             tableWidget.clearSelection()  # Clear any previous selection
+            if Filter:
+                for i in range(tableWidget.rowCount()):
+                    tableWidget.setRowHidden(i, False)
             return
 
         if direction == 'next':
@@ -133,6 +391,52 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Save the current search state back to the tableWidget's attributes
         tableWidget.current_search_index = current_search_index
+
+    def enrich_tableWidget_via_form(self, p_tableWidget, p_dictionary_items):
+        # Initialize a list to hold the new row items
+        new_row = []
+        
+        # Loop through the dictionary to get values from the widgets
+        for widget, column_index in p_dictionary_items.items():
+            value = ""
+            if isinstance(widget, QLineEdit):
+                value = widget.text()
+            elif isinstance(widget, QCheckBox):
+                value = 'Yes' if widget.isChecked() else 'No'
+            elif isinstance(widget, QComboBox):
+                value = widget.currentText()
+            
+            new_row.append(QTableWidgetItem(str(value)))
+            
+        # Insert a new row at the end of the table
+        row_position = p_tableWidget.rowCount()
+        p_tableWidget.insertRow(row_position)
+        
+        # Populate the new row with the collected items
+        for i, item in enumerate(new_row):
+            p_tableWidget.setItem(row_position, i, item)
+
+    def enrich_form_via_tableWidget(self,p_tableWidget, p_dictionary_items):
+        selected_items = p_tableWidget.selectedItems()
+        if not selected_items:
+            return
+
+        selected_row = selected_items[0].row()
+
+        for widget, column_index in p_dictionary_items.items():
+            cell_item = p_tableWidget.item(selected_row, column_index)
+            if cell_item:
+                value = cell_item.text()
+
+                if isinstance(widget, QLineEdit):
+                    widget.setText(value)
+                elif isinstance(widget, QCheckBox):
+                    true_values = ["yes", "1", "ok", "enabled"]
+                    widget.setChecked(value.lower() in true_values)
+                elif isinstance(widget, QComboBox):
+                    index = widget.findText(value)
+                    if index != -1:
+                        widget.setCurrentIndex(index)
 
     def calc_net_value(self, add_widgets, sub_widgets, net_widget):
         try:
@@ -171,27 +475,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ]
         self.calc_net_value(add_widgets, sub_widgets, self.lineEdit_inv__PriceNetPurchase)
 
-    def enrich_form_via_tableWidget(self,p_tableWidget, p_dictionary_items):
-        selected_items = p_tableWidget.selectedItems()
-        if not selected_items:
-            return
-
-        selected_row = selected_items[0].row()
-
-        for widget, column_index in p_dictionary_items.items():
-            cell_item = p_tableWidget.item(selected_row, column_index)
-            if cell_item:
-                value = cell_item.text()
-
-                if isinstance(widget, QLineEdit):
-                    widget.setText(value)
-                elif isinstance(widget, QCheckBox):
-                    true_values = ["yes", "1", "ok", "enabled"]
-                    widget.setChecked(value.lower() in true_values)
-                elif isinstance(widget, QComboBox):
-                    index = widget.findText(value)
-                    if index != -1:
-                        widget.setCurrentIndex(index)
 
     def event_tab_change(self, index):
         current_tab_title = self.tabWidget.tabText(index)
