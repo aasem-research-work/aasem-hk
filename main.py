@@ -101,13 +101,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lineEdit_inv_PricePurchaseLess2.textChanged.connect(self.update_net_purchase_price)
 
 
-        # search in stakeholder
+        # Evnets to be triggered
         self.lineEdit_search_tableWidget_stk.textChanged.connect(lambda: self.search_and_navigate(self.tableWidget_stk, 
                                                                                                   self.lineEdit_search_tableWidget_stk.text()))
         self.pushButton_search_prev_tableWidget_stk.clicked.connect(lambda: self.search_and_navigate(self.tableWidget_stk, direction='prev'))
         self.pushButton_search_next_tableWidget_stk.clicked.connect(lambda: self.search_and_navigate(self.tableWidget_stk, direction='next'))
 
-        # search in inventory
         self.lineEdit_search_tableWidget_inv.textChanged.connect(lambda: self.search_and_navigate(self.tableWidget_inv, 
                                                                                                   self.lineEdit_search_tableWidget_inv.text()))
         self.pushButton_search_prev_tableWidget_inv.clicked.connect(lambda: self.search_and_navigate(self.tableWidget_inv, direction='prev'))
@@ -120,8 +119,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.toolBox_trans_SalePurchase.currentChanged.connect(self.page_changed)
 
-        #self.treeWidget_trans.itemClicked.connect(self.enrich_form_via_treeWidget)
-        self.treeWidget_trans.itemClicked.connect(self.handle_tree_item_click)
+        self.treeWidget_trans.currentItemChanged.connect(self.handle_tree_item_click)
+
 
         # Initialize the database connection and move to a Tab
         self.conn = sqlite3.connect(self.database)
@@ -137,12 +136,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             SELECT
                 strftime('%Y-%m-%d', T.Timestamp) AS Timestamp,
                 T.InvoiceNumber,
+                T.TransactionID,
                 T.TransactionType,
                 S.StakeholderName, 
                 I.ItemName,
                 T.Quantity, 
                 T.PaymentCash, 
                 T.PaymentCredit
+                
             FROM 
                 Transactions T
                 LEFT JOIN Stakeholder S ON T.StakeholderID = S.StakeholderID
@@ -195,26 +196,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.enrich_form_via_treeWidget(self.dictionary_trans_enrich_form_via_treeWidget, p_query)
 
 
-    def handle_tree_item_click_old(self, item, column):
-        values = []
-        current_item = item
-        level = 0  # To keep track of the level of the item
-        
-        # Loop to climb up to the root item and collect information
-        while current_item is not None:
-            values.insert(0, current_item.text(0))
-            current_item = current_item.parent()
-            level += 1
-
-        # If it's a Level 3 item, add more details
-        if level == 3:
-            child_count = item.childCount()
-            for i in range(child_count):
-                child_item = item.child(i)
-                values.append(f"{child_item.text(0)}: {child_item.text(1)}")
-
-        display_text = ", ".join(values)
-        self.statusBar().showMessage(display_text)
 
     def enrich_form_via_treeWidget(self, dictionary_trans_enrich_form_via_treeWidget, p_query):
         # Initialize an empty dictionary to hold the data
@@ -268,7 +249,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             invoice_item = None
 
             for row in results:
-                timestamp, invoice_number, transaction_type, stakeholder_name, item_name, quantity, payment_cash, payment_credit = row
+                timestamp, invoice_number,transaction_id, transaction_type, stakeholder_name, item_name, quantity, payment_cash, payment_credit = row  # Include TransactionID
 
                 if timestamp != current_timestamp:
                     current_timestamp = timestamp
@@ -282,7 +263,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                 # Create a child_item for the transaction details
                 child_item = QTreeWidgetItem(invoice_item)
-                child_item.setText(0, "Transaction Details")
+                child_item.setText(0, str(transaction_id))  # Use TransactionID here
                 child_item.setText(1, transaction_type)
                 child_item.setText(2, stakeholder_name)
                 child_item.setText(3, item_name)
@@ -292,6 +273,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         except Exception as e:
             print(f"An error occurred: {e}")
+
 
 
     def delete_record(self, p_dictionary_items, p_tableWidget):
