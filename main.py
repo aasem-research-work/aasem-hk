@@ -122,6 +122,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.treeWidget_trans.currentItemChanged.connect(self.handle_tree_item_click)
 
 
+
         # Initialize the database connection and move to a Tab
         self.conn = sqlite3.connect(self.database)
         self.tabWidget.setCurrentIndex(0)
@@ -148,85 +149,78 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 Transactions T
                 LEFT JOIN Stakeholder S ON T.StakeholderID = S.StakeholderID
                 LEFT JOIN Inventory I ON T.ItemID = I.ItemID
+            ORDER BY Timestamp desc
             '''
             self.make_tree(self.treeWidget_trans, query, self.conn)
 
-    def handle_tree_item_click(self, item):
+
+    def handle_tree_item_click(self, current_item, previous_item):
         # Initialize an empty list to hold the details
         clicked_details = []
         
         # Traverse up the tree from the clicked item to collect details
+        item = current_item
         while item:
             clicked_details.insert(0, item.text(0))
             item = item.parent()
 
-        # Prepare the status bar message
-        status_message = ", ".join([f"{detail}" for detail in clicked_details])
-        
-        # Update the status bar
-        self.statusBar().showMessage(status_message)
-        
-        # If it's a Level 2 item, enrich the form
-        if len(clicked_details) == 2:
+        # Prepare the query based on the level clicked
+        if len(clicked_details) == 2:  # Level 2 (Invoice)
             invoice_number = clicked_details[1]
-            
-            # Prepare the query
             p_query = f'''
-                SELECT
-                strftime('%Y-%m-%d', T.Timestamp) AS Timestamp,
-                T.InvoiceNumber,
-                T.TransactionID,
-                T.TransactionType,
-                S.StakeholderName, 
-                I.ItemName,
-                T.ItemDetails,
-                T.Quantity, 
-                T.QuantityUnit,
-                T.PaymentCash, 
-                T.PaymentCredit
-            FROM 
-                Transactions T
-                LEFT JOIN Stakeholder S ON T.StakeholderID = S.StakeholderID
-                LEFT JOIN Inventory I ON T.ItemID = I.ItemID
-                WHERE T.InvoiceNumber = '{invoice_number}'
+                SELECT * FROM Transactions 
+                WHERE InvoiceNumber = '{invoice_number}'
                 '''
-            #p_query = f"SELECT * FROM Transactions WHERE InvoiceNumber = '{invoice_number}'"
             
-            # Call enrich_form_via_treeWidget to populate the form
-            self.enrich_form_via_treeWidget(self.dictionary_trans_enrich_form_via_treeWidget, p_query)
-
+        elif len(clicked_details) == 3:  # Level 3 (Transaction)
+            transaction_id = clicked_details[2]
+            p_query = f'''
+                SELECT * FROM Transactions 
+                WHERE TransactionID = '{transaction_id}'
+                '''
+        
+        else:
+            return  # Do nothing for other levels
+        
+        # Call enrich_form_via_treeWidget to populate the form
+        self.enrich_form_via_treeWidget(self.dictionary_trans_enrich_form_via_treeWidget, p_query)
 
 
     def enrich_form_via_treeWidget(self, dictionary_trans_enrich_form_via_treeWidget, p_query):
         # Initialize an empty dictionary to hold the data
         data_dict = {}
         
-        # Execute the SQL query
-        cursor = self.conn.cursor()
-        cursor.execute(p_query)
-        result = cursor.fetchall()
+        try:
+            # Execute the SQL query
+            cursor = self.conn.cursor()
+            cursor.execute(p_query)
+            result = cursor.fetchall()
 
-        # If no data is returned, return early
-        if not result:
-            return
+            # If no data is returned, return early
+            if not result:
+                return
 
-        # Get the column names from the cursor description
-        column_names = [desc[0] for desc in cursor.description]
+            # Get the column names from the cursor description
+            column_names = [desc[0] for desc in cursor.description]
 
-        # Populate the data dictionary
-        for col_name in column_names:
-            data_dict[col_name] = []
+            # Populate the data dictionary
+            for col_name in column_names:
+                data_dict[col_name] = []
 
-        for row in result:
-            for i, value in enumerate(row):
-                data_dict[column_names[i]].append(value)
+            for row in result:
+                for i, value in enumerate(row):
+                    data_dict[column_names[i]].append(value)
 
-        # Populate the QLineEdit fields
-        for line_edit, column_name in dictionary_trans_enrich_form_via_treeWidget.items():
-            if column_name in data_dict:
-                # Assume the first row of data should be used to populate the form
-                value = data_dict[column_name][0]
-                line_edit.setText(str(value))
+            # Populate the QLineEdit fields
+            for line_edit, column_name in dictionary_trans_enrich_form_via_treeWidget.items():
+                if column_name in data_dict:
+                    # Assume the first row of data should be used to populate the form
+                    value = data_dict[column_name][0]
+                    line_edit.setText(str(value))
+
+        except Exception as e:
+            print(f"An error occurred while enriching the form: {e}")
+
 
     def make_tree(self, p_treeWidget_trans, p_query, p_conn):
         try:
@@ -273,7 +267,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         except Exception as e:
             print(f"An error occurred: {e}")
-
 
 
     def delete_record(self, p_dictionary_items, p_tableWidget):
