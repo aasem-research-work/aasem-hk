@@ -403,8 +403,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for i in range(len(placeholders) - 1):
             updated_query += placeholders[i] + actual_values[i]
         updated_query += placeholders[-1]
-
-
+        print (updated_query)
 
 
     def search_and_navigate(self, tableWidget, query=None, direction=None, Filter=True):
