@@ -706,8 +706,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
-             <height>28</height>
+             <width>100</width>
+             <height>30</height>
             </rect>
            </property>
            <attribute name="label">
@@ -859,7 +859,7 @@
         <widget class="QCheckBox" name="checkBox_IsCustomer">
          <property name="geometry">
           <rect>
-           <x>150</x>
+           <x>130</x>
            <y>10</y>
            <width>86</width>
            <height>21</height>
@@ -888,9 +888,9 @@
         <widget class="QCheckBox" name="checkBox_IsSupplier">
          <property name="geometry">
           <rect>
-           <x>240</x>
+           <x>220</x>
            <y>10</y>
-           <width>86</width>
+           <width>81</width>
            <height>21</height>
           </rect>
          </property>
@@ -966,7 +966,7 @@
         <widget class="QCheckBox" name="checkBox_IsEmployee">
          <property name="geometry">
           <rect>
-           <x>330</x>
+           <x>300</x>
            <y>10</y>
            <width>86</width>
            <height>21</height>

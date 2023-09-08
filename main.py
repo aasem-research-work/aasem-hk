@@ -23,7 +23,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 {"tabname":"Transaction","query":"select * from Transactions_View_Summary","tableWidget":self.tableWidget_transaction},
                                 {"tabname":"Admin"}]
                                 }
-        self.query_insert = '''
+        self.query_insert_inv = '''
             INSERT INTO Inventory (
                 ItemID, ItemName, Manufacturer, ItemType, ItemDetails,
                 StockCount, ReorderLevel, AssetType, PricePurchaseBasic,
@@ -35,21 +35,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
                 '''
+        self.query_insert_stk = '''
+            INSERT INTO Stakeholder (
+                            StakeholderID, StakeholderName,ContactInfo,
+                            IsCustomer,IsSupplier,IsEmployee,
+                            AmountPayable,AmountReceivable,Notes,
+                            ReminderNote, ReminderDateTime
+                        )
+                        VALUES (?,?,?,?,?,?, ?,?,?,?,? );
+
+
+                '''
         
         # Create a dictionary mapping the widgets to their respective column indices
         self.dictionary_stakeholder_enrich_form_via_tableWidget = {
+            
             self.lineEdit_Stk_StakeholderID:0,
             self.lineEdit_Stk_StakeholderName: 1,
             self.lineEdit_Stk_ContactInfo: 2,
+
             self.checkBox_IsCustomer: 3,
             self.checkBox_IsSupplier: 4,
             self.checkBox_IsEmployee: 5,
-            #self.lineEdit_OtherRoles:6,
-            self.lineEdit_Stk_AmountPayable:7,
-            self.lineEdit_Stk_AmountReceivable:8,
-            self.lineEdit_Stk_Notes:9,
-            self.lineEdit_Stk_ReminderNote:10,
-            self.lineEdit_Stk_ID_ReminderDateTime:11
+            
+            self.lineEdit_Stk_AmountPayable:6,
+            self.lineEdit_Stk_AmountReceivable:7,
+            self.lineEdit_Stk_Notes:8,
+            self.lineEdit_Stk_ReminderNote:9,
+            self.lineEdit_Stk_ID_ReminderDateTime:10
+         
         }
 
         self.dictionary_inventory_enrich_form_via_tableWidget={
@@ -556,22 +570,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             tableWidget=self.global_dictionary["tab"][tabIndex]["tableWidget"]
             self.load_data_to_tableWidget(query, tableWidget)
         
-    def manubar_actions(self, p_actionName):
-        print (self.current_screen,"->",p_actionName)
-        if self.current_screen=="Inventory":
-            if p_actionName=="actionNewRecord":
-                self.clearForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
-            if p_actionName=="actionDuplicateRecord":
-                self.duplicateForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
-            if p_actionName=="actionDeleteRecord":
-                self.delete_record(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
-            if p_actionName=="actionSave":
-                self.saveForm(self.query_insert, self.dictionary_inventory_enrich_form_via_tableWidget)
-            if p_actionName=="actionFilterRecord":
-                pass
-
-
-
     def load_data_to_tableWidget(self, p_query, p_tableWidget, p_param={}):
         try:
             cursor = self.conn.cursor()
@@ -638,6 +636,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # Debugging: Print exception
             print("Exception:", e)
 
+
+    def manubar_actions(self, p_actionName):
+        print (self.current_screen,"->",p_actionName)
+        if self.current_screen=="Inventory":
+            if p_actionName=="actionNewRecord":
+                self.clearForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
+            if p_actionName=="actionDuplicateRecord":
+                self.duplicateForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
+            if p_actionName=="actionDeleteRecord":
+                self.delete_record(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
+            if p_actionName=="actionSave":
+                self.saveForm(self.query_insert_inv, self.dictionary_inventory_enrich_form_via_tableWidget)
+            if p_actionName=="actionFilterRecord":
+                pass
+        elif self.current_screen=="Stakeholder":
+            if p_actionName=="actionNewRecord":
+                self.clearForm(self.dictionary_stakeholder_enrich_form_via_tableWidget, self.tableWidget_stk)
+            if p_actionName=="actionDuplicateRecord":
+                self.duplicateForm(self.dictionary_stakeholder_enrich_form_via_tableWidget, self.tableWidget_stk)
+            if p_actionName=="actionDeleteRecord":
+                self.delete_record(self.dictionary_stakeholder_enrich_form_via_tableWidget, self.tableWidget_stk)
+            if p_actionName=="actionSave":
+                self.saveForm(self.query_insert_stk, self.dictionary_stakeholder_enrich_form_via_tableWidget)
+            if p_actionName=="actionFilterRecord":
+                pass
 
 if __name__ == "__main__":
     app = QApplication([])
