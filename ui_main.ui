@@ -25,7 +25,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Title of Tab</string>
+       <string>Transaction</string>
       </property>
      </widget>
     </item>
@@ -72,14 +72,23 @@
           <property name="title">
            <string/>
           </property>
-          <widget class="QLineEdit" name="lineEdit_trans_sale_Stakeholder">
+          <widget class="QLineEdit" name="lineEdit_trans_sale_StakeholderName">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
            <property name="geometry">
             <rect>
-             <x>90</x>
+             <x>180</x>
              <y>60</y>
-             <width>381</width>
+             <width>291</width>
              <height>22</height>
             </rect>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
            </property>
           </widget>
           <widget class="QLabel" name="label_trans_sale_12">
@@ -98,9 +107,9 @@
           <widget class="QLabel" name="label_trans_sale_14">
            <property name="geometry">
             <rect>
-             <x>270</x>
+             <x>240</x>
              <y>30</y>
-             <width>61</width>
+             <width>71</width>
              <height>20</height>
             </rect>
            </property>
@@ -111,9 +120,9 @@
           <widget class="QLineEdit" name="lineEdit_trans_sale_timestamp">
            <property name="geometry">
             <rect>
-             <x>340</x>
+             <x>320</x>
              <y>30</y>
-             <width>131</width>
+             <width>151</width>
              <height>22</height>
             </rect>
            </property>
@@ -163,6 +172,38 @@
             <string>+</string>
            </property>
           </widget>
+          <widget class="QLineEdit" name="lineEdit_trans_sale_StakeholderID">
+           <property name="geometry">
+            <rect>
+             <x>90</x>
+             <y>60</y>
+             <width>61</width>
+             <height>22</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="pushButton_trans_addInvoice_2">
+           <property name="geometry">
+            <rect>
+             <x>150</x>
+             <y>60</y>
+             <width>21</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="toolTip">
+            <string>Show Stakeholders</string>
+           </property>
+           <property name="statusTip">
+            <string>Show Stakeholders</string>
+           </property>
+           <property name="whatsThis">
+            <string>Show Stakeholders</string>
+           </property>
+           <property name="text">
+            <string>*</string>
+           </property>
+          </widget>
          </widget>
          <widget class="QGroupBox" name="groupBox_6">
           <property name="geometry">
@@ -186,7 +227,7 @@
             </rect>
            </property>
            <property name="text">
-            <string>0000</string>
+            <string/>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -218,30 +259,17 @@
             <string>TransID</string>
            </property>
           </widget>
-          <widget class="QLineEdit" name="lineEdit_trans_sale_TransactionType">
-           <property name="geometry">
-            <rect>
-             <x>80</x>
-             <y>40</y>
-             <width>121</width>
-             <height>22</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Sale | Purchase</string>
-           </property>
-          </widget>
-          <widget class="QLineEdit" name="lineEdit_trans_sale_Item">
+          <widget class="QLineEdit" name="lineEdit_trans_sale_ItemID">
            <property name="geometry">
             <rect>
              <x>80</x>
              <y>69</y>
-             <width>381</width>
+             <width>71</width>
              <height>22</height>
             </rect>
            </property>
            <property name="text">
-            <string>Item-01-Category-subcategory</string>
+            <string/>
            </property>
           </widget>
           <widget class="QLabel" name="label_trans_sale_02">
@@ -280,7 +308,7 @@
             </rect>
            </property>
            <property name="text">
-            <string>Serial Number, Warranty</string>
+            <string/>
            </property>
           </widget>
           <widget class="QLineEdit" name="lineEdit_trans_sale_unit">
@@ -293,7 +321,7 @@
             </rect>
            </property>
            <property name="text">
-            <string>Number</string>
+            <string/>
            </property>
           </widget>
           <widget class="QLineEdit" name="lineEdit_trans_sale_quantity">
@@ -601,6 +629,57 @@
            </property>
            <property name="text">
             <string>...</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="pushButton_trans_addInvoice_3">
+           <property name="geometry">
+            <rect>
+             <x>150</x>
+             <y>70</y>
+             <width>21</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="toolTip">
+            <string>Show Items</string>
+           </property>
+           <property name="statusTip">
+            <string>Show Items</string>
+           </property>
+           <property name="whatsThis">
+            <string>Show Items</string>
+           </property>
+           <property name="text">
+            <string>*</string>
+           </property>
+          </widget>
+          <widget class="QLineEdit" name="lineEdit_trans_sale_ItemName">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="geometry">
+            <rect>
+             <x>180</x>
+             <y>70</y>
+             <width>281</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QLineEdit" name="lineEdit_trans_sale_TransactionType">
+           <property name="geometry">
+            <rect>
+             <x>80</x>
+             <y>40</y>
+             <width>113</width>
+             <height>22</height>
+            </rect>
            </property>
           </widget>
          </widget>
@@ -2043,10 +2122,10 @@
   <tabstop>lineEdit_trans_sale_schedule</tabstop>
   <tabstop>tabWidget</tabstop>
   <tabstop>tab_trans</tabstop>
-  <tabstop>lineEdit_trans_sale_Stakeholder</tabstop>
+  <tabstop>lineEdit_trans_sale_StakeholderName</tabstop>
   <tabstop>tableWidget_transaction</tabstop>
   <tabstop>lineEdit_trans_sale_quantity</tabstop>
-  <tabstop>lineEdit_trans_sale_Item</tabstop>
+  <tabstop>lineEdit_trans_sale_ItemID</tabstop>
   <tabstop>lineEdit_trans_sale_Item_details</tabstop>
   <tabstop>lineEdit_trans_sale_credit</tabstop>
   <tabstop>lineEdit_trans_sale_unit</tabstop>
