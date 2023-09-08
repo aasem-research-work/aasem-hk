@@ -1,10 +1,12 @@
 <RCC>
   <qresource prefix="icon">
+    <file alias="Commit">resources/icons/database--plus.png</file>
+    <file alias="Rollback">resources/icons/database--exclamation.png</file>
+    <file alias="Delete">resources/icons/notebook--minus.png</file>
     <file alias="Edit">resources/icons/ui-tab--pencil.png</file>
     <file alias="Filter">resources/icons/binocular.png</file>
-    <file alias="cancel">resources/icons/cross-button.png</file>
+    <file alias="Duplicate">resources/icons/notebooks.png</file>
+    <file alias="Add">resources/icons/notebook--plus.png</file>
     <file alias="Save">resources/icons/disk-return.png</file>
-    <file alias="delete">resources/icons/minus-circle.png</file>
-    <file alias="add">resources/icons/plus-button.png</file>
   </qresource>
 </RCC>

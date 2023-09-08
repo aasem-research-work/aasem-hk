@@ -13,6 +13,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
+        self.current_screen="None"
         self.database="db/sample_computer.db"
         self.global_dictionary={"currentTab":3,
                                 "tab":
@@ -100,6 +101,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             #self.lineEdit_trans_sale_note
         }
 
+        # Manu-bar
+        self.actionNewRecord.triggered.connect(lambda: self.manubar_actions("actionNewRecord"))
+        self.actionDuplicateRecord.triggered.connect(lambda: self.manubar_actions("actionDuplicateRecord"))
+        self.actionSave.triggered.connect(lambda: self.manubar_actions("actionSave"))
+        self.actionFilterRecord.triggered.connect(lambda: self.manubar_actions("actionFilterRecord"))
+        self.actionDeleteRecord.triggered.connect(lambda: self.manubar_actions("actionDeleteRecord"))
+        self.actionRollback.triggered.connect(lambda: self.manubar_actions("actionRollback"))
+        self.actionCommit.triggered.connect(lambda: self.manubar_actions("actionCommit"))
+
         # Connect the function to the cell click signal
         self.tableWidget_stk.currentCellChanged.connect(lambda: self.enrich_form_via_tableWidget(self.tableWidget_stk, self.dictionary_stakeholder_enrich_form_via_tableWidget))
         self.tableWidget_stk.cellClicked.connect(lambda: self.enrich_form_via_tableWidget(self.tableWidget_stk, self.dictionary_stakeholder_enrich_form_via_tableWidget))
@@ -135,10 +145,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_search_prev_tableWidget_inv.clicked.connect(lambda: self.search_and_navigate(self.tableWidget_inv, direction='prev'))
         self.pushButton_search_next_tableWidget_inv.clicked.connect(lambda: self.search_and_navigate(self.tableWidget_inv, direction='next'))
 
-        self.pushButton_inv_new.clicked.connect(lambda: self.clearForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv))
-        self.pushButton_inv_save.clicked.connect(lambda: self.saveForm(self.query_insert, self.dictionary_inventory_enrich_form_via_tableWidget))
-        self.pushButton_inv_duplicate.clicked.connect(lambda: self.duplicateForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv))
-        self.pushButton_inv_delete.clicked.connect(lambda: self.delete_record(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv))
 
         self.toolBox_trans_SalePurchase.currentChanged.connect(self.page_changed)
         self.treeWidget_trans.currentItemChanged.connect(self.handle_tree_item_click)
@@ -146,6 +152,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Initialize the database connection and move to a Tab
         self.conn = sqlite3.connect(self.database)
         self.tabWidget.setCurrentIndex(0)
+        self.current_screen=self.tabWidget.tabText(0)
         self.page_changed(1)
    
 
@@ -538,6 +545,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def event_tab_change(self, index):
         current_tab_title = self.tabWidget.tabText(index)
+        self.current_screen=self.tabWidget.tabText(index)
         self.label_Tab_Title.setText(current_tab_title)
         self.global_dictionary["currentTab"] = index
 
@@ -546,11 +554,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if "query" in self.global_dictionary["tab"][tabIndex]:
             query=self.global_dictionary["tab"][tabIndex]["query"]
             tableWidget=self.global_dictionary["tab"][tabIndex]["tableWidget"]
-
-            self.actionNewRecord.triggered.connect(lambda: self.insert_row_into_table(tableWidget))
-            self.actionDeleteRecord.triggered.connect(lambda: self.delete_row_from_table(tableWidget))
-
             self.load_data_to_tableWidget(query, tableWidget)
+        
+    def manubar_actions(self, p_actionName):
+        print (self.current_screen,"->",p_actionName)
+        if self.current_screen=="Inventory":
+            if p_actionName=="actionNewRecord":
+                self.clearForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
+            if p_actionName=="actionDuplicateRecord":
+                self.duplicateForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
+            if p_actionName=="actionDeleteRecord":
+                self.delete_record(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
+            if p_actionName=="actionSave":
+                self.saveForm(self.query_insert, self.dictionary_inventory_enrich_form_via_tableWidget)
+            if p_actionName=="actionFilterRecord":
+                pass
+
+
 
     def load_data_to_tableWidget(self, p_query, p_tableWidget, p_param={}):
         try:
