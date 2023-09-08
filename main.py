@@ -48,23 +48,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 '''
         
         # Create a dictionary mapping the widgets to their respective column indices
-        self.dictionary_stakeholder_enrich_form_via_tableWidget = {
-            
-            self.lineEdit_Stk_StakeholderID:0,
-            self.lineEdit_Stk_StakeholderName: 1,
-            self.lineEdit_Stk_ContactInfo: 2,
-
-            self.checkBox_IsCustomer: 3,
-            self.checkBox_IsSupplier: 4,
-            self.checkBox_IsEmployee: 5,
-            
-            self.lineEdit_Stk_AmountPayable:6,
-            self.lineEdit_Stk_AmountReceivable:7,
-            self.lineEdit_Stk_Notes:8,
-            self.lineEdit_Stk_ReminderNote:9,
-            self.lineEdit_Stk_ID_ReminderDateTime:10
-         
-        }
 
         self.dictionary_inventory_enrich_form_via_tableWidget={
             self.lineEdit_inv_ItemID:0,
@@ -115,6 +98,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             #self.lineEdit_trans_sale_note
         }
 
+        self.dictionary_stakeholder_enrich_form_via_tableWidget = {
+            
+            self.lineEdit_Stk_StakeholderID:0,
+            self.lineEdit_Stk_StakeholderName: 1,
+            self.lineEdit_Stk_ContactInfo: 2,
+
+            self.checkBox_IsCustomer: 3,
+            self.checkBox_IsSupplier: 4,
+            self.checkBox_IsEmployee: 5,
+            
+            self.lineEdit_Stk_AmountPayable:6,
+            self.lineEdit_Stk_AmountReceivable:7,
+            self.lineEdit_Stk_Notes:8,
+            self.lineEdit_Stk_ReminderNote:9,
+            self.lineEdit_Stk_ID_ReminderDateTime:10
+         
+        }
         # Manu-bar
         self.actionNewRecord.triggered.connect(lambda: self.manubar_actions("actionNewRecord"))
         self.actionDuplicateRecord.triggered.connect(lambda: self.manubar_actions("actionDuplicateRecord"))
