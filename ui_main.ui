@@ -35,7 +35,7 @@
        <enum>QTabWidget::West</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_Transaction">
        <attribute name="title">
@@ -1886,20 +1886,23 @@
          <string>New</string>
         </property>
        </widget>
-       <widget class="QPushButton" name="pushButton_inv_update">
+       <widget class="QPushButton" name="pushButton_inv_save">
         <property name="geometry">
          <rect>
-          <x>100</x>
+          <x>220</x>
           <y>10</y>
           <width>71</width>
           <height>26</height>
          </rect>
         </property>
         <property name="text">
-         <string>Update</string>
+         <string>Save</string>
         </property>
        </widget>
        <widget class="QPushButton" name="pushButton_inv_delete">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>380</x>
@@ -1910,6 +1913,19 @@
         </property>
         <property name="text">
          <string>Delete</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_inv_duplicate">
+        <property name="geometry">
+         <rect>
+          <x>100</x>
+          <y>10</y>
+          <width>81</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Duplicate</string>
         </property>
        </widget>
       </widget>

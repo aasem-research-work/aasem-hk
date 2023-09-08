@@ -22,7 +22,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 {"tabname":"Transaction","query":"select * from Transactions_View_Summary","tableWidget":self.tableWidget_transaction},
                                 {"tabname":"Admin"}]
                                 }
-        
+        self.query_insert = '''
+            INSERT INTO Inventory (
+                ItemID, ItemName, Manufacturer, ItemType, ItemDetails,
+                StockCount, ReorderLevel, AssetType, PricePurchaseBasic,
+                PricePurchaseAdd1, PricePurchaseAdd2, PricePurchaseAdd3,
+                PricePurchaseLess1, PricePurchaseLess2, PriceSaleBasic,
+                PriceSaleAdd1, PriceSaleAdd2, PriceSaleAdd3, PriceSaleLess1,
+                PriceSaleLess2
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+                '''
         
         # Create a dictionary mapping the widgets to their respective column indices
         self.dictionary_stakeholder_enrich_form_via_tableWidget = {
@@ -46,20 +57,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.lineEdit_inv_Manufacturer:2,
             self.lineEdit_inv_ItemType:3,
             self.lineEdit_inv_ItemDetails:4,
+
             self.lineEdit_inv_StockCount:5,
             self.lineEdit_inv_ReorderLevel:6,
             self.lineEdit_inv_AssetType:7,
             self.lineEdit_inv_PricePurchaseBasic:8,
+
             self.lineEdit_inv_PricePurchaseAdd1:9,
             self.lineEdit_inv_PricePurchaseAdd2:10,
             self.lineEdit_inv_PricePurchaseAdd3:11,
+
             self.lineEdit_inv_PricePurchaseLess1:12,
             self.lineEdit_inv_PricePurchaseLess2:13,
             self.lineEdit_inv_PriceSaleBasic:14,
+
             self.lineEdit_inv_PriceSaleAdd1:15,
             self.lineEdit_inv_PriceSaleAdd2:16,
-            self.lineEdit_inv_PriceSaleLess1:17,
-            self.lineEdit_inv_PriceSaleLess2:18
+            self.lineEdit_inv_PriceSaleAdd3:17,
+            self.lineEdit_inv_PriceSaleLess1:18,
+            self.lineEdit_inv_PriceSaleLess2:19
         }
         
         self.dictionary_trans_enrich_form_via_treeWidget={
@@ -119,16 +135,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_search_prev_tableWidget_inv.clicked.connect(lambda: self.search_and_navigate(self.tableWidget_inv, direction='prev'))
         self.pushButton_search_next_tableWidget_inv.clicked.connect(lambda: self.search_and_navigate(self.tableWidget_inv, direction='next'))
 
-        self.pushButton_inv_update.clicked.connect(lambda: self.enrich_tableWidget_via_form(self.tableWidget_inv, self.dictionary_inventory_enrich_form_via_tableWidget))
         self.pushButton_inv_new.clicked.connect(lambda: self.clearForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv))
-
+        self.pushButton_inv_save.clicked.connect(lambda: self.saveForm(self.query_insert, self.dictionary_inventory_enrich_form_via_tableWidget))
+        self.pushButton_inv_duplicate.clicked.connect(lambda: self.duplicateForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv))
         self.pushButton_inv_delete.clicked.connect(lambda: self.delete_record(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv))
 
         self.toolBox_trans_SalePurchase.currentChanged.connect(self.page_changed)
-
         self.treeWidget_trans.currentItemChanged.connect(self.handle_tree_item_click)
-
-
 
         # Initialize the database connection and move to a Tab
         self.conn = sqlite3.connect(self.database)
@@ -210,7 +223,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         except Exception as e:
             print(f"An error occurred: {e}")
-
 
     def handle_tree_item_click(self, current_item, previous_item):
         # Initialize an empty list to hold the details
@@ -300,9 +312,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except Exception as e:
             print(f"An error occurred while enriching the form: {e}")
 
-
-
-
     def delete_record(self, p_dictionary_items, p_tableWidget):
         # Get list of selected items
         selected_items = p_tableWidget.selectedItems()
@@ -354,6 +363,49 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 widget.setChecked(False)
             elif isinstance(widget, QComboBox):
                 widget.setCurrentIndex(0)
+        #self.enrich_tableWidget_via_form(self.tableWidget_inv, self.dictionary_inventory_enrich_form_via_tableWidget)
+
+    def duplicateForm(self, p_dictionary_items, p_calcID_from_tableWidget):
+        # Find the maximum number of rows in the table widget
+        max_rows = p_calcID_from_tableWidget.rowCount()
+        
+        # Assign this value to the first item in the dictionary
+        first_item_key = list(p_dictionary_items.keys())[0]
+        first_item_key.setText(str(max_rows + 1))
+        
+        #self.enrich_tableWidget_via_form(self.tableWidget_inv, self.dictionary_inventory_enrich_form_via_tableWidget)
+
+    def saveForm(self, p_query, p_dictionary_items):
+        # Fetch the actual values from the widgets
+        actual_values = []
+        for widget in p_dictionary_items.keys():
+            if isinstance(widget, QLineEdit):
+                value = f"'{widget.text()}'"
+            elif isinstance(widget, QCheckBox):
+                value = '1' if widget.isChecked() else '0'
+            elif isinstance(widget, QComboBox):
+                value = f"'{widget.currentText()}'"
+            else:
+                value = "Unknown Type"
+            actual_values.append(value)
+            
+        # Debugging lines to check lengths
+        placeholders = p_query.split('?')
+
+        if len(placeholders) - 1 != len(actual_values):
+            print("Mismatch in the number of placeholders and actual values.")
+            print("Number of placeholders:", len(placeholders) - 1)
+            print("Number of actual values:", len(actual_values))
+            return
+
+        # Replace '?' placeholders with the actual widget values
+        updated_query = ''
+        for i in range(len(placeholders) - 1):
+            updated_query += placeholders[i] + actual_values[i]
+        updated_query += placeholders[-1]
+
+
+
 
     def search_and_navigate(self, tableWidget, query=None, direction=None, Filter=True):
         current_search_index = -1
