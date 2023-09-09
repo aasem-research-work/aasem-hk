@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QWidget, QVBoxLayout
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QListView, QCompleter
 from PyQt5.QtCore import QStringListModel
+import json
 
 from ui_main import Ui_MainWindow
 import sqlite3
@@ -115,6 +116,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.lineEdit_Stk_ID_ReminderDateTime:10
          
         }
+
+
+        self.dictionary_invoice_live={
+            "key_timestamp":"Timestamp",
+            "key_InvoiceNumber":"InvoiceNumber",
+            "key_StakeholderID":"StakeholderID",
+            "key_StakeholderName":"StakeholderName",
+            "transactions":[{
+            "key_ItemID":"ItemID",
+
+            "key_TransactionType":"TransactionType",
+            "key_trans_id":"TransactionID",
+            "key_ItemName":"ItemName",
+            
+            "key_Item_details":"ItemDetails",
+            "key_quantity":"Quantity",
+            "key_unit":"QuantityUnit",
+            "key_rate":"SaleRateNet",
+            "key_cash":"PaymentCash",
+            "key_credit":"PaymentCredit"
+            #key_schedule,
+            #key_terms,
+            #key_note
+           }]
+        }
         # Manu-bar
         self.actionNewRecord.triggered.connect(lambda: self.manubar_actions("actionNewRecord"))
         self.actionDuplicateRecord.triggered.connect(lambda: self.manubar_actions("actionDuplicateRecord"))
@@ -169,6 +195,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.current_screen=self.tabWidget.tabText(0)
         self.page_changed(1)
    
+
 
     def page_changed(self, index):
         current_widget = self.toolBox_trans_SalePurchase.widget(index)
@@ -637,6 +664,61 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print("Exception:", e)
 
 
+    def create_invoice_live(self, p_dictionary_items_source, p_dictionary_items_target):
+        # Assuming p_dictionary_items_target has a 'transactions' key that contains a list
+        if 'transactions' not in p_dictionary_items_target:
+            p_dictionary_items_target['transactions'] = []
+        
+        # Extract parent keys
+        parent_keys = ['Timestamp', 'InvoiceNumber', 'StakeholderID', 'StakeholderName']
+        
+        # Check if parent keys are different
+        parent_keys_different = False
+        for key, value in p_dictionary_items_source.items():
+            if value in parent_keys:
+                target_key = f"key_{value}"
+                if target_key in p_dictionary_items_target and p_dictionary_items_target[target_key] != key.text():
+                    parent_keys_different = True
+                    break
+                    
+        # If parent keys are different, reset the transactions list
+        if parent_keys_different:
+            p_dictionary_items_target['transactions'] = []
+        
+        # Update the parent keys
+        for key, value in p_dictionary_items_source.items():
+            if value in parent_keys:
+                p_dictionary_items_target[f"key_{value}"] = key.text()
+        
+        # Prepare a transaction dictionary
+        transaction = {}
+        for key, value in p_dictionary_items_source.items():
+            if value not in parent_keys:
+                transaction[f"key_{value}"] = key.text()
+        
+        # Append the transaction to the 'transactions' list
+        p_dictionary_items_target['transactions'].append(transaction)
+
+    def update_live_invoice(self, p_invoice_data, p_dictionary_common_items, p_table):
+        # Update common items
+        for label_widget, key in p_dictionary_common_items.items():
+            if key in p_invoice_data:
+                label_widget.setText(str(p_invoice_data[key]))
+        
+        # Assuming p_table is a QTableWidget, clear it for new data
+        p_table.setRowCount(0)
+
+        # Update the table with transactions
+        for transaction in p_invoice_data.get('transactions', []):
+            row_position = p_table.rowCount()
+            p_table.insertRow(row_position)
+            
+            for col, key in enumerate(transaction.keys()):
+                item = QTableWidgetItem(str(transaction[key]))
+                p_table.setItem(row_position, col, item)
+
+
+
     def manubar_actions(self, p_actionName):
         print (self.current_screen,"->",p_actionName)
         if self.current_screen=="Inventory":
@@ -661,6 +743,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.saveForm(self.query_insert_stk, self.dictionary_stakeholder_enrich_form_via_tableWidget)
             if p_actionName=="actionFilterRecord":
                 pass
+        elif self.current_screen=="Transaction":
+            if p_actionName=="actionSave":
+                self.create_invoice_live(self.dictionary_trans_enrich_form_via_treeWidget, self.dictionary_invoice_live)
+                print (json.dumps(self.dictionary_invoice_live))
+                dictionary_common_items={
+                self.label_LiveInvoice_sales_invoice:"key_InvoiceNumber",
+                self.label_LiveInvoice_sales_date:"key_timestamp",
+                self.label_LiveInvoice_sales_name: "key_StakeholderName",
+                }
+                self.update_live_invoice(self.dictionary_invoice_live, dictionary_common_items, self.tableWidget_invoice)
+                
 
 if __name__ == "__main__":
     app = QApplication([])

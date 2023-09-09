@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>882</width>
+    <width>1116</width>
     <height>693</height>
    </rect>
   </property>
@@ -46,7 +46,7 @@
          <rect>
           <x>10</x>
           <y>10</y>
-          <width>811</width>
+          <width>1041</width>
           <height>561</height>
          </rect>
         </property>
@@ -631,7 +631,7 @@
            <rect>
             <x>530</x>
             <y>20</y>
-            <width>241</width>
+            <width>481</width>
             <height>451</height>
            </rect>
           </property>
@@ -639,7 +639,7 @@
            <enum>QFrame::StyledPanel</enum>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <property name="tabSpacing">
            <number>6</number>
@@ -649,21 +649,165 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>237</width>
-             <height>387</height>
+             <width>479</width>
+             <height>395</height>
             </rect>
            </property>
            <attribute name="label">
             <string>Invoice</string>
            </attribute>
+           <widget class="QGroupBox" name="groupBox_8">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>10</y>
+              <width>451</width>
+              <height>80</height>
+             </rect>
+            </property>
+            <property name="title">
+             <string/>
+            </property>
+            <widget class="QLabel" name="label_3">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>10</y>
+               <width>47</width>
+               <height>13</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Invoice #</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_7">
+             <property name="geometry">
+              <rect>
+               <x>260</x>
+               <y>10</y>
+               <width>31</width>
+               <height>16</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Date</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_17">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>40</y>
+               <width>71</width>
+               <height>16</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Name:</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_LiveInvoice_sales_invoice">
+             <property name="geometry">
+              <rect>
+               <x>70</x>
+               <y>10</y>
+               <width>47</width>
+               <height>16</height>
+              </rect>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>0000</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_LiveInvoice_sales_date">
+             <property name="geometry">
+              <rect>
+               <x>300</x>
+               <y>10</y>
+               <width>131</width>
+               <height>20</height>
+              </rect>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>00/00/0000</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_LiveInvoice_sales_name">
+             <property name="geometry">
+              <rect>
+               <x>60</x>
+               <y>40</y>
+               <width>361</width>
+               <height>20</height>
+              </rect>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>First Middle Last Name</string>
+             </property>
+            </widget>
+           </widget>
+           <widget class="QTableWidget" name="tableWidget_invoice">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>101</y>
+              <width>451</width>
+              <height>221</height>
+             </rect>
+            </property>
+            <column>
+             <property name="text">
+              <string>Item</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Qty</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Rate</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Sub-Total</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>TransID</string>
+             </property>
+            </column>
+           </widget>
           </widget>
           <widget class="QWidget" name="page_History">
            <property name="geometry">
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>237</width>
-             <height>387</height>
+             <width>479</width>
+             <height>395</height>
             </rect>
            </property>
            <attribute name="label">
@@ -711,7 +855,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="res_main.qrc">
+            <iconset>
              <normaloff>:/icon/Add</normaloff>:/icon/Add</iconset>
            </property>
           </widget>
@@ -728,7 +872,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="res_main.qrc">
+            <iconset>
              <normaloff>:/icon/Duplicate</normaloff>:/icon/Duplicate</iconset>
            </property>
           </widget>
@@ -808,7 +952,7 @@
          <rect>
           <x>30</x>
           <y>170</y>
-          <width>851</width>
+          <width>1011</width>
           <height>321</height>
          </rect>
         </property>
@@ -1148,7 +1292,7 @@
          <rect>
           <x>30</x>
           <y>210</y>
-          <width>731</width>
+          <width>1011</width>
           <height>271</height>
          </rect>
         </property>
@@ -1910,7 +2054,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>882</width>
+     <width>1116</width>
      <height>21</height>
     </rect>
    </property>
@@ -1979,7 +2123,7 @@
   </widget>
   <action name="actionDuplicateRecord">
    <property name="icon">
-    <iconset resource="res_main.qrc">
+    <iconset>
      <normaloff>:/icon/Duplicate</normaloff>:/icon/Duplicate</iconset>
    </property>
    <property name="text">
@@ -1997,7 +2141,7 @@
   </action>
   <action name="actionNewRecord">
    <property name="icon">
-    <iconset resource="res_main.qrc">
+    <iconset>
      <normaloff>:/icon/Add</normaloff>:/icon/Add</iconset>
    </property>
    <property name="text">
@@ -2024,7 +2168,7 @@
   </action>
   <action name="actionDeleteRecord">
    <property name="icon">
-    <iconset resource="res_main.qrc">
+    <iconset>
      <normaloff>:/icon/Delete</normaloff>:/icon/Delete</iconset>
    </property>
    <property name="text">
@@ -2033,7 +2177,7 @@
   </action>
   <action name="actionRollback">
    <property name="icon">
-    <iconset resource="res_main.qrc">
+    <iconset>
      <normaloff>:/icon/Rollback</normaloff>:/icon/Rollback</iconset>
    </property>
    <property name="text">
@@ -2042,7 +2186,7 @@
   </action>
   <action name="actionCommit">
    <property name="icon">
-    <iconset resource="res_main.qrc">
+    <iconset>
      <normaloff>:/icon/Commit</normaloff>:/icon/Commit</iconset>
    </property>
    <property name="text">
