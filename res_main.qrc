@@ -3,10 +3,10 @@
     <file alias="Commit">resources/icons/database--plus.png</file>
     <file alias="Rollback">resources/icons/database--exclamation.png</file>
     <file alias="Delete">resources/icons/notebook--minus.png</file>
-    <file alias="Edit">resources/icons/ui-tab--pencil.png</file>
+    <file alias="Draft">resources/icons/ui-tab--pencil.png</file>
     <file alias="Filter">resources/icons/binocular.png</file>
-    <file alias="Duplicate">resources/icons/notebooks.png</file>
-    <file alias="Add">resources/icons/notebook--plus.png</file>
+    <file alias="New">resources/icons/notebook.png</file>
+    <file alias="Duplicate">resources/icons/notebook--plus.png</file>
     <file alias="Save">resources/icons/disk-return.png</file>
   </qresource>
 </RCC>

@@ -47,7 +47,89 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
                 '''
-        
+                
+        # Model for Stakeholder
+        self.model_stakeholder = {
+            'table': 'stakeholder',
+            'screen': 'stakeholder',
+            'data': [
+                {
+                    'StakeholderID': self.lineEdit_Stk_StakeholderID,
+                    'StakeholderName': self.lineEdit_Stk_StakeholderName,
+                    'ContactInfo': self.lineEdit_Stk_ContactInfo,
+                    'IsCustomer': self.checkBox_IsCustomer,
+                    'IsSupplier': self.checkBox_IsSupplier,
+                    'IsEmployee': self.checkBox_IsEmployee,
+                    'OtherRoles': "None",
+                    'AmountPayable': self.lineEdit_Stk_AmountPayable,
+                    'AmountReceivable': self.lineEdit_Stk_AmountReceivable,
+                    'Notes': self.lineEdit_Stk_Notes,
+                    'ReminderNote': self.lineEdit_Stk_ReminderNote,
+                    'ReminderDateTime': self.lineEdit_Stk_ID_ReminderDateTime,
+                    'ReminderScript': "None"
+                }
+                # Add more instances as needed
+            ]
+        }
+
+        # Model for Inventory
+        self.model_inventory = {
+            'table': 'inventory',
+            'screen': 'inventory',
+            'data': [
+                {
+                    'ItemID': self.lineEdit_inv_ItemID,
+                    'ItemName': self.lineEdit_inv_ItemName,
+                    'Manufacturer': self.lineEdit_inv_Manufacturer,
+                    'ItemType': self.lineEdit_inv_ItemType,
+                    'ItemDetails': self.lineEdit_inv_ItemDetails,
+                    'StockCount': self.lineEdit_inv_StockCount,
+                    'ReorderLevel': self.lineEdit_inv_ReorderLevel,
+                    'AssetType': self.lineEdit_inv_AssetType,
+                    'PricePurchaseBasic': self.lineEdit_inv_PricePurchaseBasic,
+                    'PricePurchaseAdd1': self.lineEdit_inv_PricePurchaseAdd1,
+                    'PricePurchaseAdd2': self.lineEdit_inv_PricePurchaseAdd2,
+                    'PricePurchaseAdd3': self.lineEdit_inv_PricePurchaseAdd3,
+                    'PricePurchaseLess1': self.lineEdit_inv_PricePurchaseLess1,
+                    'PricePurchaseLess2': self.lineEdit_inv_PricePurchaseLess1,
+                    'PriceSaleBasic': self.lineEdit_inv_PriceSaleBasic,
+                    'PriceSaleAdd1': self.lineEdit_inv_PriceSaleAdd1,
+                    'PriceSaleAdd2': self.lineEdit_inv_PriceSaleAdd2,
+                    'PriceSaleAdd3': self.lineEdit_inv_PriceSaleAdd3,
+                    'PriceSaleLess1': self.lineEdit_inv_PriceSaleLess1,
+                    'PriceSaleLess2': self.lineEdit_inv_PriceSaleLess2
+                }
+                # Add more instances as needed
+            ]
+        }
+
+        # Model for Transaction
+        self.model_transaction = {
+            'table': 'transaction',
+            'screen': 'transaction',
+            'data': [
+                {
+                    'InvoiceNumber': self.lineEdit_trans_sale_InvoiceNumber,
+                    'Timestamp': self.lineEdit_trans_sale_timestamp,
+                    'TransactionID': self.lineEdit_trans_sale_trans_id,
+                    'TransactionType': self.lineEdit_trans_sale_TransactionType,
+                    'TransactionCategory': "Retail",
+                    'UserID': "Admin",
+                    'StakeholderID': self.lineEdit_trans_sale_StakeholderID,
+                    'ItemID': self.lineEdit_trans_sale_ItemID,
+                    'ItemDetails': self.lineEdit_trans_sale_Item_details,
+                    'Quantity': self.lineEdit_trans_sale_quantity,
+                    'QuantityUnit': self.lineEdit_trans_sale_unit,
+                    'PaymentCash': self.lineEdit_trans_sale_cash,
+                    'PaymentCredit': self.lineEdit_trans_sale_credit,
+                    'PaymentCreditSchedule': self.lineEdit_trans_sale_schedule,
+                    'PaymentCreditTerms': self.lineEdit_trans_sale_terms,
+                    'Notes': self.lineEdit_trans_sale_notes
+                }
+                # Add more instances as needed
+            ]
+        }
+
         # Create a dictionary mapping the widgets to their respective column indices
 
         self.dictionary_inventory_enrich_form_via_tableWidget={
@@ -145,6 +227,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionNewRecord.triggered.connect(lambda: self.manubar_actions("actionNewRecord"))
         self.actionDuplicateRecord.triggered.connect(lambda: self.manubar_actions("actionDuplicateRecord"))
         self.actionSave.triggered.connect(lambda: self.manubar_actions("actionSave"))
+        self.actionLoad_Draft.triggered.connect(lambda: self.manubar_actions("actionLoadDraft"))
         self.actionFilterRecord.triggered.connect(lambda: self.manubar_actions("actionFilterRecord"))
         self.actionDeleteRecord.triggered.connect(lambda: self.manubar_actions("actionDeleteRecord"))
         self.actionRollback.triggered.connect(lambda: self.manubar_actions("actionRollback"))
@@ -877,8 +960,43 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.duplicateForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
             if p_actionName=="actionDeleteRecord":
                 self.delete_record(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
+            if p_actionName=="actionLoadDraft":
+                print ("loading draft-inventory")
+                self.dbAction_load_from_json(self.model_inventory, "tmp_model_inventory.json")
+
             if p_actionName=="actionSave":
-                self.saveForm(self.query_insert_inv, self.dictionary_inventory_enrich_form_via_tableWidget)
+                #self.saveForm(self.query_insert_inv, self.dictionary_inventory_enrich_form_via_tableWidget)
+
+                self.model_inventory = {
+                    'table': 'inventory',
+                    'screen': 'inventory',
+                    'data': [
+                        {
+                            'ItemID': self.lineEdit_inv_ItemID,
+                            'ItemName': self.lineEdit_inv_ItemName,
+                            'Manufacturer': self.lineEdit_inv_Manufacturer,
+                            'ItemType': self.lineEdit_inv_ItemType,
+                            'ItemDetails': self.lineEdit_inv_ItemDetails,
+                            'StockCount': self.lineEdit_inv_StockCount,
+                            'ReorderLevel': self.lineEdit_inv_ReorderLevel,
+                            'AssetType': self.lineEdit_inv_AssetType,
+                            'PricePurchaseBasic': self.lineEdit_inv_PricePurchaseBasic,
+                            'PricePurchaseAdd1': self.lineEdit_inv_PricePurchaseAdd1,
+                            'PricePurchaseAdd2': self.lineEdit_inv_PricePurchaseAdd2,
+                            'PricePurchaseAdd3': self.lineEdit_inv_PricePurchaseAdd3,
+                            'PricePurchaseLess1': self.lineEdit_inv_PricePurchaseLess1,
+                            'PricePurchaseLess2': self.lineEdit_inv_PricePurchaseLess1,
+                            'PriceSaleBasic': self.lineEdit_inv_PriceSaleBasic,
+                            'PriceSaleAdd1': self.lineEdit_inv_PriceSaleAdd1,
+                            'PriceSaleAdd2': self.lineEdit_inv_PriceSaleAdd2,
+                            'PriceSaleAdd3': self.lineEdit_inv_PriceSaleAdd3,
+                            'PriceSaleLess1': self.lineEdit_inv_PriceSaleLess1,
+                            'PriceSaleLess2': self.lineEdit_inv_PriceSaleLess2
+                        }
+                        # Add more instances as needed
+                    ]
+                }
+                self.dbAction_dump_in_json(self.model_inventory , "tmp_model_inventory.json")
             if p_actionName=="actionFilterRecord":
                 pass
         elif self.current_screen=="Stakeholder":
@@ -888,11 +1006,63 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.duplicateForm(self.dictionary_stakeholder_enrich_form_via_tableWidget, self.tableWidget_stk)
             if p_actionName=="actionDeleteRecord":
                 self.delete_record(self.dictionary_stakeholder_enrich_form_via_tableWidget, self.tableWidget_stk)
+            
+            if p_actionName=="actionLoadDraft":
+                print ("loading draft-Stakeholder")
+                self.model_stakeholder = {
+                    'table': 'stakeholder',
+                    'screen': 'stakeholder',
+                    'data': [
+                        {
+                            'StakeholderID': self.lineEdit_Stk_StakeholderID,
+                            'StakeholderName': self.lineEdit_Stk_StakeholderName,
+                            'ContactInfo': self.lineEdit_Stk_ContactInfo,
+                            'IsCustomer': self.checkBox_IsCustomer,
+                            'IsSupplier': self.checkBox_IsSupplier,
+                            'IsEmployee': self.checkBox_IsEmployee,
+                            'OtherRoles': "None",
+                            'AmountPayable': self.lineEdit_Stk_AmountPayable,
+                            'AmountReceivable': self.lineEdit_Stk_AmountReceivable,
+                            'Notes': self.lineEdit_Stk_Notes,
+                            'ReminderNote': self.lineEdit_Stk_ReminderNote,
+                            'ReminderDateTime': self.lineEdit_Stk_ID_ReminderDateTime,
+                            'ReminderScript': "None"
+                        }
+                        # Add more instances as needed
+                    ]
+                }
+                self.dbAction_load_from_json(self.model_stakeholder, "tmp_model_stakeholder.json")
             if p_actionName=="actionSave":
-                self.saveForm(self.query_insert_stk, self.dictionary_stakeholder_enrich_form_via_tableWidget)
+                #self.saveForm(self.query_insert_stk, self.dictionary_stakeholder_enrich_form_via_tableWidget)      
+                self.model_stakeholder = {
+                    'table': 'stakeholder',
+                    'screen': 'stakeholder',
+                    'data': [
+                        {
+                            'StakeholderID': self.lineEdit_Stk_StakeholderID,
+                            'StakeholderName': self.lineEdit_Stk_StakeholderName,
+                            'ContactInfo': self.lineEdit_Stk_ContactInfo,
+                            'IsCustomer': self.checkBox_IsCustomer,
+                            'IsSupplier': self.checkBox_IsSupplier,
+                            'IsEmployee': self.checkBox_IsEmployee,
+                            'OtherRoles': "None",
+                            'AmountPayable': self.lineEdit_Stk_AmountPayable,
+                            'AmountReceivable': self.lineEdit_Stk_AmountReceivable,
+                            'Notes': self.lineEdit_Stk_Notes,
+                            'ReminderNote': self.lineEdit_Stk_ReminderNote,
+                            'ReminderDateTime': self.lineEdit_Stk_ID_ReminderDateTime,
+                            'ReminderScript': "None"
+                        }
+                        # Add more instances as needed
+                    ]
+                }
+                self.dbAction_dump_in_json(self.model_stakeholder , "tmp_model_stakeholder.json")
+
             if p_actionName=="actionFilterRecord":
                 pass
         elif self.current_screen=="Transaction":
+            if p_actionName=="actionLoadDraft":
+                print ("loading draft-transactoin")
             if p_actionName=="actionSave":
                 invNumber=self.lineEdit_trans_sale_InvoiceNumber.text()
                 self.preview_Invoice_create( invNumber, 'tmp_trans.htm')
@@ -969,6 +1139,111 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print(f"Database error: {e}")
         except Exception as e:
             print(f"An error occurred: {e}")
+
+
+    def dbAction_dump_in_json1(self, p_dictionary, p_file):
+        try:
+            if not isinstance(p_dictionary, dict):
+                print("Input data is not a dictionary.")
+                return
+
+            for key in ['table', 'screen', 'data']:
+                if key not in p_dictionary:
+                    print(f"Key {key} not found in the dictionary.")
+                    return
+                if key == 'data':
+                    if not isinstance(p_dictionary[key], list):
+                        print("Model data for data is not a list.")
+                        return
+                    for i, instance in enumerate(p_dictionary[key]):
+                        if not isinstance(instance, dict):
+                            print(f"Instance {i} in data is not a dictionary.")
+                            return
+                        for field, widget in instance.items():
+                            if isinstance(widget, QLineEdit):
+                                instance[field] = widget.text()
+                            # Add similar conditions for other widget types like QCheckBox, QComboBox, etc.
+
+            with open(p_file, 'w') as f:
+                json.dump(p_dictionary, f)
+            print("Data dumped successfully in JSON.")
+        except Exception as e:
+            print(f"An error occurred while dumping data to JSON: {e}")
+
+
+
+    def dbAction_dump_in_json(self, p_dictionary, p_file):
+        try:
+            # Serialize the widgets to simple Python types
+            serialized_data = []
+            for instance in p_dictionary['data']:
+                serialized_instance = {}
+                for key, widget in instance.items():
+                    if isinstance(widget, QLineEdit):
+                        serialized_instance[key] = widget.text()
+                    elif isinstance(widget, QCheckBox):
+                        serialized_instance[key] = widget.isChecked()
+                    # Handle other widget types here
+                serialized_data.append(serialized_instance)
+
+            # Update the dictionary
+            p_dictionary['data'] = serialized_data
+
+            # Write to the file
+            with open(p_file, 'w') as f:
+                json.dump(p_dictionary, f)
+
+            print("Data dumped successfully in JSON.")
+
+        except Exception as e:
+            print(f"An error occurred while dumping data to JSON: {e}")
+
+
+    def dbAction_load_from_json(self, p_model, p_file):
+        try:
+            # Read the JSON file
+            with open(p_file, 'r') as f:
+                json_data = json.load(f)
+
+            # Validate that the JSON data is a dictionary
+            if not isinstance(json_data, dict):
+                print("JSON data is not a dictionary.")
+                return
+
+            # Create a mapping from JSON field names to widgets
+            widget_dict = {k: v for k, v in p_model['data'][0].items()}
+
+            # Validate that the 'data' in JSON is a list
+            if not isinstance(json_data.get('data', []), list):
+                print("JSON data field is not a list.")
+                return
+
+            # Loop through each instance (in case of multiple instances)
+            for instance_data in json_data['data']:
+                if not isinstance(instance_data, dict):
+                    print("Instance data is not a dictionary.")
+                    continue
+
+                for key, value in instance_data.items():
+                    widget = widget_dict.get(key, None)
+                    if widget is None:
+                        print(f"Key {key} not found in widget dictionary.")
+                        continue
+
+                    if isinstance(widget, QLineEdit):
+                        widget.setText(str(value))
+                    elif isinstance(widget, QCheckBox):
+                        widget.setChecked(bool(value))
+                    elif isinstance(widget, QComboBox):
+                        index = widget.findText(str(value))
+                        if index >= 0:
+                            widget.setCurrentIndex(index)
+
+            print("Data loaded successfully from JSON.")
+
+        except Exception as e:
+            print(f"An error occurred while loading data from JSON: {e}")
+
 
 
 if __name__ == "__main__":

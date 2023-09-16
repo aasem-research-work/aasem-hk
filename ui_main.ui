@@ -485,7 +485,7 @@
                      <string/>
                     </property>
                     <property name="icon">
-                     <iconset>
+                     <iconset resource="res_main.qrc">
                       <normaloff>:/icon/Duplicate</normaloff>:/icon/Duplicate</iconset>
                     </property>
                    </widget>
@@ -1371,6 +1371,7 @@
     <addaction name="actionNewRecord"/>
     <addaction name="actionDuplicateRecord"/>
     <addaction name="separator"/>
+    <addaction name="actionLoad_Draft"/>
     <addaction name="actionSave"/>
     <addaction name="separator"/>
     <addaction name="actionFilterRecord"/>
@@ -1420,6 +1421,7 @@
    <addaction name="actionNewRecord"/>
    <addaction name="actionDuplicateRecord"/>
    <addaction name="separator"/>
+   <addaction name="actionLoad_Draft"/>
    <addaction name="actionSave"/>
    <addaction name="separator"/>
    <addaction name="actionFilterRecord"/>
@@ -1429,7 +1431,7 @@
   </widget>
   <action name="actionDuplicateRecord">
    <property name="icon">
-    <iconset>
+    <iconset resource="res_main.qrc">
      <normaloff>:/icon/Duplicate</normaloff>:/icon/Duplicate</iconset>
    </property>
    <property name="text">
@@ -1447,8 +1449,8 @@
   </action>
   <action name="actionNewRecord">
    <property name="icon">
-    <iconset>
-     <normaloff>:/icon/Add</normaloff>:/icon/Add</iconset>
+    <iconset resource="res_main.qrc">
+     <normaloff>:/icon/New</normaloff>:/icon/New</iconset>
    </property>
    <property name="text">
     <string>New</string>
@@ -1531,6 +1533,15 @@
    </property>
    <property name="text">
     <string>Save</string>
+   </property>
+  </action>
+  <action name="actionLoad_Draft">
+   <property name="icon">
+    <iconset resource="res_main.qrc">
+     <normaloff>:/icon/Draft</normaloff>:/icon/Draft</iconset>
+   </property>
+   <property name="text">
+    <string>Load Draft</string>
    </property>
   </action>
  </widget>
