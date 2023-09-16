@@ -8,7 +8,7 @@ import json
 
 from ui_main import Ui_MainWindow
 import sqlite3
-import re
+import re, os
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, **kwargs):
@@ -158,6 +158,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.tabWidget.currentChanged.connect(self.event_tab_change)
 
+
         # For Calculating Net Value
         self.lineEdit_inv_PriceSaleBasic.textChanged.connect(self.update_net_sale_price)
         self.lineEdit_inv_PriceSaleAdd1.textChanged.connect(self.update_net_sale_price)
@@ -175,6 +176,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
         # Evnets to be triggered
+        
         self.lineEdit_search_tableWidget_stk.textChanged.connect(lambda: self.search_and_navigate(self.tableWidget_stk, 
                                                                                                   self.lineEdit_search_tableWidget_stk.text()))
         self.pushButton_search_prev_tableWidget_stk.clicked.connect(lambda: self.search_and_navigate(self.tableWidget_stk, direction='prev'))
@@ -185,9 +187,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_search_prev_tableWidget_inv.clicked.connect(lambda: self.search_and_navigate(self.tableWidget_inv, direction='prev'))
         self.pushButton_search_next_tableWidget_inv.clicked.connect(lambda: self.search_and_navigate(self.tableWidget_inv, direction='next'))
 
+        self.lineEdit_trans_sale_StakeholderID.textChanged.connect(lambda: self.copy_value(self.lineEdit_trans_sale_StakeholderName, self.lineEdit_filter_trans))
 
-        self.toolBox_trans_SalePurchase.currentChanged.connect(self.page_changed)
+        self.tableWidget_trans_list.selectionModel().currentRowChanged.connect(lambda: self.helloworld(self.tableWidget_trans_list))
+        #self.tableWidget_invoice.selectionModel().currentRowChanged.connect(lambda: self.helloworld(self.tableWidget_invoice))
+
+
+        #self.toolBox_trans_SalePurchase.currentChanged.connect(self.page_changed)
         self.treeWidget_trans.currentItemChanged.connect(self.handle_tree_item_click)
+
+        self.lineEdit_trans_sale_InvoiceNumber.textChanged.connect(self.on_Invoice_Value_Change)
+
 
         # Initialize the database connection and move to a Tab
         self.conn = sqlite3.connect(self.database)
@@ -195,11 +205,160 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.current_screen=self.tabWidget.tabText(0)
         self.page_changed(1)
    
+    def on_Invoice_Value_Change(self):
+        # Get the value from lineEdit_trans_sale_InvoiceNumber, trim and convert to uppercase
+        currentInvoiceNumber = self.lineEdit_trans_sale_InvoiceNumber.text().strip().upper()
+        
+        # SQL query to fetch records based on currentInvoiceNumber
+        p_query = '''
+            SELECT
+                T.ItemID,
+                I.ItemName,
+                T.Quantity, 
+                I.PriceSaleBasic+I.PriceSaleAdd1+I.PriceSaleAdd2+I.PriceSaleAdd1-I.PriceSaleLess1-I.PriceSaleLess2 SaleRateNet,
+                T.PaymentCash, 
+                T.PaymentCredit,
+                T.TransactionType Account,
+                T.TransactionID TID   
+            FROM 
+                Transactions T
+                LEFT JOIN Inventory I ON T.ItemID = I.ItemID
+            WHERE T.InvoiceNumber=?
+            ORDER BY Timestamp desc
+        '''
+        p_param = (currentInvoiceNumber, )  # Query parameters
+        
+        # Execute the query and fetch results
+        cursor = self.conn.cursor()
+        cursor.execute(p_query, p_param)
+        results = cursor.fetchall()
+        
+        # Update the status bar and tableWidget based on fetched records
+        if not results:
+            self.statusBar().showMessage(f"No records found for Invoice {currentInvoiceNumber}")
+        else:
+            self.statusBar().showMessage(f"{len(results)} records found for the invoice {currentInvoiceNumber}")
+            self.load_data_to_tableWidget(p_query, self.tableWidget_trans_list, p_param)
+
+            invNumber=currentInvoiceNumber #self.lineEdit_trans_sale_InvoiceNumber.text()
+            self.preview_Invoice_create( invNumber, 'tmp_trans.htm')
+            self.preview_Invoice_live(self.textBrowser_InvoicePreview, 'tmp_trans.htm')
+                
+    def helloworld(self, p_tableWidget):
+        # Initialize an empty dictionary to hold the data
+        data_dict = {}
+
+        # Get the current row and fetch the TransactionID from the column named "TID"
+        current_row = p_tableWidget.currentRow()
+        transaction_id_item = p_tableWidget.item(current_row, p_tableWidget.columnCount() - 1)  # Assuming TID is in the last column
+        if transaction_id_item is not None:
+            transaction_id = transaction_id_item.text()
+        else:
+            print("No row selected.")
+            return
+
+        # Define the query using the fetched TransactionID
+        p_query = '''
+        SELECT
+            T.TransactionID,
+            T.ItemID,
+            T.TransactionType,
+            T.StakeholderID,
+            S.StakeholderName, 
+            I.ItemName,
+            T.Quantity, 
+            I.PriceSaleBasic+I.PriceSaleAdd1+I.PriceSaleAdd2+I.PriceSaleAdd1-I.PriceSaleLess1-I.PriceSaleLess2 SaleRateNet,
+            T.PaymentCash, 
+            T.PaymentCredit   
+        FROM 
+            Transactions T
+            LEFT JOIN Stakeholder S ON T.StakeholderID = S.StakeholderID
+            LEFT JOIN Inventory I ON T.ItemID = I.ItemID
+        WHERE T.TransactionID = ?
+        ORDER BY Timestamp desc
+        '''
+
+        # Dictionary for QLineEdit fields
+        dictionary_trans_enrich_form = {
+            self.lineEdit_trans_sale_timestamp: "Timestamp",
+            self.lineEdit_trans_sale_InvoiceNumber: "InvoiceNumber",
+            self.lineEdit_trans_sale_StakeholderID: "StakeholderID",
+            self.lineEdit_trans_sale_StakeholderName: "StakeholderName",
+            self.lineEdit_trans_sale_ItemID: "ItemID",
+            self.lineEdit_trans_sale_TransactionType: "TransactionType",
+            self.lineEdit_trans_sale_trans_id: "TransactionID",
+            self.lineEdit_trans_sale_ItemName: "ItemName",
+            self.lineEdit_trans_sale_Item_details: "ItemDetails",
+            self.lineEdit_trans_sale_quantity: "Quantity",
+            self.lineEdit_trans_sale_unit: "QuantityUnit",
+            self.lineEdit_trans_sale_rate: "SaleRateNet",
+            self.lineEdit_trans_sale_cash: "PaymentCash",
+            self.lineEdit_trans_sale_credit: "PaymentCredit"
+        }
+
+        try:
+            # Execute the SQL query
+            cursor = self.conn.cursor()
+            cursor.execute(p_query, (transaction_id,))
+            result = cursor.fetchall()
+
+            # If no data is returned, return early
+            if not result:
+                print("No records found.")
+                return
+
+            # Get the column names from the cursor description
+            column_names = [desc[0] for desc in cursor.description]
+            
+            # Populate the data dictionary
+            for col_name in column_names:
+                data_dict[col_name] = []
+
+            for row in result:
+                for i, value in enumerate(row):
+                    data_dict[column_names[i]].append(value)
+            
+            # Populate the QLineEdit fields
+            for line_edit, column_name in dictionary_trans_enrich_form.items():
+                if column_name in data_dict:
+                    # Assume the first row of data should be used to populate the form
+                    value = data_dict[column_name][0]
+                    line_edit.setText(str(value))
+
+        except Exception as e:
+            print(f"An error occurred while enriching the form: {e}")
+
+
+
+    def copy_value(self, source_Widget, target_Widget):
+        # Initialize variable to hold the source value
+        source_value = None
+
+        # Check the type of source_Widget and retrieve its value accordingly
+        if isinstance(source_Widget, QLineEdit):
+            source_value = source_Widget.text()
+        elif isinstance(source_Widget, QLabel):
+            source_value = source_Widget.text()
+        # Add more widget types here if needed
+
+        # If source_value is None, it means the widget type is not supported
+        if source_value is None:
+            print("Unsupported source widget type.")
+            return
+
+        # Check the type of target_Widget and set its value accordingly
+        if isinstance(target_Widget, QLineEdit):
+            target_Widget.setText(source_value)
+        elif isinstance(target_Widget, QLabel):
+            target_Widget.setText(source_value)
+        # Add more widget types here if needed
+        else:
+            print("Unsupported target widget type.")
 
 
     def page_changed(self, index):
-        current_widget = self.toolBox_trans_SalePurchase.widget(index)
-        if current_widget == self.page_History:
+        #current_widget = self.toolBox_trans_SalePurchase.widget(index)
+        if True: # current_widget == self.page_History:
             query = '''
             SELECT
                 strftime('%Y-%m-%d', T.Timestamp) AS Timestamp,
@@ -708,16 +867,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Assuming p_table is a QTableWidget, clear it for new data
         p_table.setRowCount(0)
 
-        # Update the table with transactions
-        for transaction in p_invoice_data.get('transactions', []):
-            row_position = p_table.rowCount()
-            p_table.insertRow(row_position)
-            
-            for col, key in enumerate(transaction.keys()):
-                item = QTableWidgetItem(str(transaction[key]))
-                p_table.setItem(row_position, col, item)
-
-
 
     def manubar_actions(self, p_actionName):
         print (self.current_screen,"->",p_actionName)
@@ -745,15 +894,82 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 pass
         elif self.current_screen=="Transaction":
             if p_actionName=="actionSave":
-                self.create_invoice_live(self.dictionary_trans_enrich_form_via_treeWidget, self.dictionary_invoice_live)
-                print (json.dumps(self.dictionary_invoice_live))
-                dictionary_common_items={
-                self.label_LiveInvoice_sales_invoice:"key_InvoiceNumber",
-                self.label_LiveInvoice_sales_date:"key_timestamp",
-                self.label_LiveInvoice_sales_name: "key_StakeholderName",
-                }
-                self.update_live_invoice(self.dictionary_invoice_live, dictionary_common_items, self.tableWidget_invoice)
-                
+                invNumber=self.lineEdit_trans_sale_InvoiceNumber.text()
+                self.preview_Invoice_create( invNumber, 'tmp_trans.htm')
+                self.preview_Invoice_live(self.textBrowser_InvoicePreview, 'tmp_trans.htm')
+
+
+    def preview_Invoice_live(self, p_textBrowser, p_file):
+        try:
+            with open(p_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+            #p_textBrowser.setPlainText(content)  # For plain text
+            p_textBrowser.setHtml(content)  # For HTML content
+        except FileNotFoundError:
+            print(f"File {p_file} not found.")
+        except Exception as e:
+            print(f"An error occurred while previewing the invoice: {e}")
+
+
+    def preview_Invoice_create(self, p_invoicenumber, p_file):
+        try:
+            # Connect to the database
+            cursor = self.conn.cursor()
+
+            # Execute the query
+            cursor.execute("""
+                SELECT
+                    T.InvoiceNumber, 
+                    T.TransactionID, 
+                    T.TransactionType, 
+                    T.TransactionCategory, 
+                    T.UserID,
+                    T.StakeholderID, S.StakeholderName, S.ContactInfo, 
+                    T.ItemID, I.ItemName, I.ItemType, 
+                    T.Quantity, 
+                    T.PaymentCash, 
+                    T.PaymentCredit, 
+                    T.PaymentCreditSchedule,
+                    T.PaymentCreditTerms,
+                    T.Timestamp,
+                    T.Notes
+                FROM 
+                    Transactions T
+                    LEFT JOIN Stakeholder S ON T.StakeholderID = S.StakeholderID
+                    LEFT JOIN Inventory I ON T.ItemID = I.ItemID
+                WHERE T.InvoiceNumber=?
+            """, (p_invoicenumber,))
+
+            results = cursor.fetchall()
+
+            if results:
+                # Create the HTML content
+                header_content = f"""
+                    <p> <b>Invoice:</b><u> {results[0][0]}</u></p>
+                    <p> <b> Date: </b><u> {results[0][16]}</u></p>
+                    <p> <b> Customer:</b><u> {results[0][6]}</u></p>
+                    <p>Contact: <u>{results[0][7]}</u></p>
+                """
+
+                table_content = "<table border='1'>"
+                table_content += "<tr><th>ID</th><th>Item Name</th><th>Type</th><th>Quantity</th><th>Cash</th><th>Credit</th></tr>"
+
+                for row in results:
+                    table_content += f"<tr><td>{row[8]}</td><td>{row[9]}</td><td>{row[10]}</td><td>{row[11]}</td><td>{row[12]}</td><td>{row[13]}</td></tr>"
+
+                table_content += "</table>"
+
+                full_content = header_content + table_content
+
+                # Write the HTML content to the file
+                with open(p_file, 'w', encoding='utf-8') as f:
+                    f.write(full_content)
+
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
 
 if __name__ == "__main__":
     app = QApplication([])
