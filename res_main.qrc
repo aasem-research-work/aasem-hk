@@ -2,11 +2,17 @@
   <qresource prefix="icon">
     <file alias="Commit">resources/icons/database--plus.png</file>
     <file alias="Rollback">resources/icons/database--exclamation.png</file>
-    <file alias="Delete">resources/icons/notebook--minus.png</file>
-    <file alias="Draft">resources/icons/ui-tab--pencil.png</file>
+    <file alias="Erase">resources/icons/eraser.png</file>
+    <file alias="Delete">resources/icons/actionDeleteRecord.png</file>
+    <file alias="SubDelete">resources/icons/actionDeleteSubRecord.png</file>
+    <file alias="Duplicate">resources/icons/actionDuplicateRecord.png</file>
+    <file alias="Draft">resources/icons/bin.png</file>
+    <file alias="Cancel">resources/icons/document--exclamation.png</file>
+    <file alias="EditRecord">resources/icons/actionEdit.png</file>
+    <file alias="NewRecord">resources/icons/actionNewRecord.png</file>
+    <file alias="NewSubRecord">resources/icons/actionNewSubRecord.png</file>
+    <file alias="EditSubRecord">resources/icons/actionSubEdit.png</file>
     <file alias="Filter">resources/icons/binocular.png</file>
-    <file alias="New">resources/icons/notebook.png</file>
-    <file alias="Duplicate">resources/icons/notebook--plus.png</file>
     <file alias="Save">resources/icons/disk-return.png</file>
   </qresource>
 </RCC>

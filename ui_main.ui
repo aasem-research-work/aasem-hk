@@ -35,7 +35,7 @@
        <enum>QTabWidget::West</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_Transaction">
        <attribute name="title">
@@ -1370,9 +1370,11 @@
     </property>
     <addaction name="actionNewRecord"/>
     <addaction name="actionDuplicateRecord"/>
-    <addaction name="separator"/>
     <addaction name="actionLoad_Draft"/>
+    <addaction name="separator"/>
+    <addaction name="actionEdit"/>
     <addaction name="actionSave"/>
+    <addaction name="actionCancel"/>
     <addaction name="separator"/>
     <addaction name="actionFilterRecord"/>
     <addaction name="separator"/>
@@ -1380,6 +1382,7 @@
     <addaction name="separator"/>
     <addaction name="actionRollback"/>
     <addaction name="actionCommit"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuBackup">
     <property name="title">
@@ -1420,9 +1423,11 @@
    </attribute>
    <addaction name="actionNewRecord"/>
    <addaction name="actionDuplicateRecord"/>
-   <addaction name="separator"/>
    <addaction name="actionLoad_Draft"/>
+   <addaction name="actionEdit"/>
+   <addaction name="separator"/>
    <addaction name="actionSave"/>
+   <addaction name="actionCancel"/>
    <addaction name="separator"/>
    <addaction name="actionFilterRecord"/>
    <addaction name="separator"/>
@@ -1450,7 +1455,7 @@
   <action name="actionNewRecord">
    <property name="icon">
     <iconset resource="res_main.qrc">
-     <normaloff>:/icon/New</normaloff>:/icon/New</iconset>
+     <normaloff>:/icon/NewRecord</normaloff>:/icon/NewRecord</iconset>
    </property>
    <property name="text">
     <string>New</string>
@@ -1542,6 +1547,24 @@
    </property>
    <property name="text">
     <string>Load Draft</string>
+   </property>
+  </action>
+  <action name="actionCancel">
+   <property name="icon">
+    <iconset resource="res_main.qrc">
+     <normaloff>:/icon/Cancel</normaloff>:/icon/Cancel</iconset>
+   </property>
+   <property name="text">
+    <string>Cancel</string>
+   </property>
+  </action>
+  <action name="actionEdit">
+   <property name="icon">
+    <iconset resource="res_main.qrc">
+     <normaloff>:/icon/EditRecord</normaloff>:/icon/EditRecord</iconset>
+   </property>
+   <property name="text">
+    <string>Edit</string>
    </property>
   </action>
  </widget>

@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem,QLineEdit, QCheckBox, QComboBox, QTreeWidgetItem
-from PyQt5.QtWidgets import QStatusBar
+from PyQt5.QtWidgets import QStatusBar,QMessageBox
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QWidget, QVBoxLayout, QTreeWidgetItem
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QListView, QCompleter
@@ -16,6 +16,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.current_screen="None"
         self.database="db/sample_computer.db"
+        self.manubar_actions("actionCancel")
         self.global_dictionary={"currentTab":3,
                                 "tab":
                                 [{"tabname":"Deshboard"},
@@ -226,12 +227,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Manu-bar
         self.actionNewRecord.triggered.connect(lambda: self.manubar_actions("actionNewRecord"))
         self.actionDuplicateRecord.triggered.connect(lambda: self.manubar_actions("actionDuplicateRecord"))
+        self.actionLoad_Draft.triggered.connect(lambda: self.manubar_actions("actionLoad_Draft"))
+
+        self.actionEdit.triggered.connect(lambda: self.manubar_actions("actionEdit"))
         self.actionSave.triggered.connect(lambda: self.manubar_actions("actionSave"))
-        self.actionLoad_Draft.triggered.connect(lambda: self.manubar_actions("actionLoadDraft"))
+        self.actionCancel.triggered.connect(lambda: self.manubar_actions("actionCancel"))
+
         self.actionFilterRecord.triggered.connect(lambda: self.manubar_actions("actionFilterRecord"))
+
         self.actionDeleteRecord.triggered.connect(lambda: self.manubar_actions("actionDeleteRecord"))
         self.actionRollback.triggered.connect(lambda: self.manubar_actions("actionRollback"))
         self.actionCommit.triggered.connect(lambda: self.manubar_actions("actionCommit"))
+      
 
         # Connect the function to the cell click signal
         self.tableWidget_stk.currentCellChanged.connect(lambda: self.enrich_form_via_tableWidget(self.tableWidget_stk, self.dictionary_stakeholder_enrich_form_via_tableWidget))
@@ -951,9 +958,151 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         p_table.setRowCount(0)
 
 
+
+    def dbAction_execute(self, p_file, p_conn):
+        try:
+            # Read the SQL file to get the SQL query
+            with open(p_file, 'r') as file:
+                sql_query = file.read().strip()  # Remove leading/trailing whitespace
+
+            if not sql_query:
+                return -1, "No command found to execute."
+
+            # Execute the SQL query
+            cursor = p_conn.cursor()
+            cursor.execute(sql_query)
+            
+            return 1, "SQL query executed successfully."
+            
+        except FileNotFoundError:
+            return -1, "SQL file not found."
+        except sqlite3.IntegrityError as e:
+            return -1, f"Integrity Error: {e}"
+        except Exception as e:
+            return -1, f"An error occurred while executing SQL: {e}"
+
+
+    def dbAction_commit(self, p_conn=None):
+        try:
+            # Commit all the changes made so far
+            p_conn.commit()
+            print("All changes committed successfully.")
+            return "Commit successful."
+            
+        except Exception as e:
+            print(f"An error occurred while committing: {e}")
+            return f"Commit failed: {e}"
+
+    def dbAction_rollback(self, p_conn=None):
+        try:
+            # Roll back all the changes made so far
+            p_conn.rollback()
+            print("All changes rolled back successfully.")
+            return "Rollback successful."
+            
+        except Exception as e:
+            print(f"An error occurred while rolling back: {e}")
+            return f"Rollback failed: {e}"
+
+    def show_message(self, p_title, p_message):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setWindowTitle(p_title)
+        msg.setText(p_message)
+        msg.exec_()
+
+    def menuController(self, p_action):
+        # Create a dictionary mapping actions to the menu items they should enable or disable
+        menuDict = {
+            "actionNewRecord": {
+                "enable": ["actionLoad_Draft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
+                "disable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"]
+            },
+            "actionDuplicateRecord": {
+                "enable": ["actionLoad_Draft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
+                "disable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"]
+            },
+            "actionEdit": {
+                "enable": ["actionLoad_Draft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
+                "disable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"]
+            },
+            "actionLoad_Draft": {
+                "enable": ["actionLoad_Draft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
+                "disable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"]
+            },
+            "actionSave": {
+                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoad_Draft", "actionEdit", "actionRollback", "actionCommit"],
+                "disable": ["actionSave", "actionCancel"]
+            },
+            "actionCancel": {
+                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoad_Draft", "actionEdit", "actionRollback", "actionCommit"],
+                "disable": ["actionSave", "actionCancel"]
+            },
+            "actionCommit": {
+                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoad_Draft", "actionEdit", "actionRollback", "actionCommit"],
+                "disable": ["actionSave", "actionCancel"]
+            },
+            "actionRollback": {
+                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoad_Draft", "actionEdit", "actionRollback", "actionCommit"],
+                "disable": ["actionSave", "actionCancel"]
+            },
+            "actionDeleteRecord": {
+                "enable": ["actionLoad_Draft", "actionSave", "actionCancel", "actionRollback", "actionCommit", "actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"],
+                "disable": []
+            }
+        }
+
+        # Check if the provided p_action exists in menuDict
+        if p_action in menuDict:
+            # Enable the necessary actions
+            for action in menuDict[p_action]["enable"]:
+                getattr(self, action).setEnabled(True)
+            # Disable the necessary actions
+            for action in menuDict[p_action]["disable"]:
+                getattr(self, action).setEnabled(False)
+        else:
+            print(f"Action {p_action} not found in menuDict.")
+
     def manubar_actions(self, p_actionName):
         print (self.current_screen,"->",p_actionName)
+        self.menuController(p_actionName)
+
+        if p_actionName=="actionCommit":
+            self.dbAction_commit(self.conn)
+
+        elif p_actionName=="actionRollback":
+            self.dbAction_rollback(self.conn)
+
         if self.current_screen=="Inventory":
+            self.model_inventory = {
+                'table': 'inventory',
+                'screen': 'inventory',
+                'data': [
+                    {
+                        'ItemID': self.lineEdit_inv_ItemID,
+                        'ItemName': self.lineEdit_inv_ItemName,
+                        'Manufacturer': self.lineEdit_inv_Manufacturer,
+                        'ItemType': self.lineEdit_inv_ItemType,
+                        'ItemDetails': self.lineEdit_inv_ItemDetails,
+                        'StockCount': self.lineEdit_inv_StockCount,
+                        'ReorderLevel': self.lineEdit_inv_ReorderLevel,
+                        'AssetType': self.lineEdit_inv_AssetType,
+                        'PricePurchaseBasic': self.lineEdit_inv_PricePurchaseBasic,
+                        'PricePurchaseAdd1': self.lineEdit_inv_PricePurchaseAdd1,
+                        'PricePurchaseAdd2': self.lineEdit_inv_PricePurchaseAdd2,
+                        'PricePurchaseAdd3': self.lineEdit_inv_PricePurchaseAdd3,
+                        'PricePurchaseLess1': self.lineEdit_inv_PricePurchaseLess1,
+                        'PricePurchaseLess2': self.lineEdit_inv_PricePurchaseLess1,
+                        'PriceSaleBasic': self.lineEdit_inv_PriceSaleBasic,
+                        'PriceSaleAdd1': self.lineEdit_inv_PriceSaleAdd1,
+                        'PriceSaleAdd2': self.lineEdit_inv_PriceSaleAdd2,
+                        'PriceSaleAdd3': self.lineEdit_inv_PriceSaleAdd3,
+                        'PriceSaleLess1': self.lineEdit_inv_PriceSaleLess1,
+                        'PriceSaleLess2': self.lineEdit_inv_PriceSaleLess2
+                    }
+                    # Add more instances as needed
+                ]
+            }
             if p_actionName=="actionNewRecord":
                 self.clearForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
             if p_actionName=="actionDuplicateRecord":
@@ -966,98 +1115,60 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             if p_actionName=="actionSave":
                 #self.saveForm(self.query_insert_inv, self.dictionary_inventory_enrich_form_via_tableWidget)
-
-                self.model_inventory = {
-                    'table': 'inventory',
-                    'screen': 'inventory',
-                    'data': [
-                        {
-                            'ItemID': self.lineEdit_inv_ItemID,
-                            'ItemName': self.lineEdit_inv_ItemName,
-                            'Manufacturer': self.lineEdit_inv_Manufacturer,
-                            'ItemType': self.lineEdit_inv_ItemType,
-                            'ItemDetails': self.lineEdit_inv_ItemDetails,
-                            'StockCount': self.lineEdit_inv_StockCount,
-                            'ReorderLevel': self.lineEdit_inv_ReorderLevel,
-                            'AssetType': self.lineEdit_inv_AssetType,
-                            'PricePurchaseBasic': self.lineEdit_inv_PricePurchaseBasic,
-                            'PricePurchaseAdd1': self.lineEdit_inv_PricePurchaseAdd1,
-                            'PricePurchaseAdd2': self.lineEdit_inv_PricePurchaseAdd2,
-                            'PricePurchaseAdd3': self.lineEdit_inv_PricePurchaseAdd3,
-                            'PricePurchaseLess1': self.lineEdit_inv_PricePurchaseLess1,
-                            'PricePurchaseLess2': self.lineEdit_inv_PricePurchaseLess1,
-                            'PriceSaleBasic': self.lineEdit_inv_PriceSaleBasic,
-                            'PriceSaleAdd1': self.lineEdit_inv_PriceSaleAdd1,
-                            'PriceSaleAdd2': self.lineEdit_inv_PriceSaleAdd2,
-                            'PriceSaleAdd3': self.lineEdit_inv_PriceSaleAdd3,
-                            'PriceSaleLess1': self.lineEdit_inv_PriceSaleLess1,
-                            'PriceSaleLess2': self.lineEdit_inv_PriceSaleLess2
-                        }
-                        # Add more instances as needed
-                    ]
-                }
                 self.dbAction_dump_in_json(self.model_inventory , "tmp_model_inventory.json")
+                self.dbAction_json_to_sql('tmp_model_inventory.json', p_dml="insert")
+                status, message = self.dbAction_execute('tmp_to_execute.sql', self.conn)
+                if status < 0:
+                    self.show_message("Not Saved", message)
+                else:
+                    self.statusBar().showMessage(message)
+
+
             if p_actionName=="actionFilterRecord":
                 pass
         elif self.current_screen=="Stakeholder":
+            self.model_stakeholder = {
+                'table': 'stakeholder',
+                'screen': 'stakeholder',
+                'data': [
+                    {
+                        'StakeholderID': self.lineEdit_Stk_StakeholderID,
+                        'StakeholderName': self.lineEdit_Stk_StakeholderName,
+                        'ContactInfo': self.lineEdit_Stk_ContactInfo,
+                        'IsCustomer': self.checkBox_IsCustomer,
+                        'IsSupplier': self.checkBox_IsSupplier,
+                        'IsEmployee': self.checkBox_IsEmployee,
+                        'OtherRoles': "None",
+                        'AmountPayable': self.lineEdit_Stk_AmountPayable,
+                        'AmountReceivable': self.lineEdit_Stk_AmountReceivable,
+                        'Notes': self.lineEdit_Stk_Notes,
+                        'ReminderNote': self.lineEdit_Stk_ReminderNote,
+                        'ReminderDateTime': self.lineEdit_Stk_ID_ReminderDateTime,
+                        'ReminderScript': "None"
+                    }
+                    # Add more instances as needed
+                ]
+            }            
             if p_actionName=="actionNewRecord":
                 self.clearForm(self.dictionary_stakeholder_enrich_form_via_tableWidget, self.tableWidget_stk)
             if p_actionName=="actionDuplicateRecord":
                 self.duplicateForm(self.dictionary_stakeholder_enrich_form_via_tableWidget, self.tableWidget_stk)
             if p_actionName=="actionDeleteRecord":
                 self.delete_record(self.dictionary_stakeholder_enrich_form_via_tableWidget, self.tableWidget_stk)
-            
             if p_actionName=="actionLoadDraft":
                 print ("loading draft-Stakeholder")
-                self.model_stakeholder = {
-                    'table': 'stakeholder',
-                    'screen': 'stakeholder',
-                    'data': [
-                        {
-                            'StakeholderID': self.lineEdit_Stk_StakeholderID,
-                            'StakeholderName': self.lineEdit_Stk_StakeholderName,
-                            'ContactInfo': self.lineEdit_Stk_ContactInfo,
-                            'IsCustomer': self.checkBox_IsCustomer,
-                            'IsSupplier': self.checkBox_IsSupplier,
-                            'IsEmployee': self.checkBox_IsEmployee,
-                            'OtherRoles': "None",
-                            'AmountPayable': self.lineEdit_Stk_AmountPayable,
-                            'AmountReceivable': self.lineEdit_Stk_AmountReceivable,
-                            'Notes': self.lineEdit_Stk_Notes,
-                            'ReminderNote': self.lineEdit_Stk_ReminderNote,
-                            'ReminderDateTime': self.lineEdit_Stk_ID_ReminderDateTime,
-                            'ReminderScript': "None"
-                        }
-                        # Add more instances as needed
-                    ]
-                }
                 self.dbAction_load_from_json(self.model_stakeholder, "tmp_model_stakeholder.json")
             if p_actionName=="actionSave":
                 #self.saveForm(self.query_insert_stk, self.dictionary_stakeholder_enrich_form_via_tableWidget)      
-                self.model_stakeholder = {
-                    'table': 'stakeholder',
-                    'screen': 'stakeholder',
-                    'data': [
-                        {
-                            'StakeholderID': self.lineEdit_Stk_StakeholderID,
-                            'StakeholderName': self.lineEdit_Stk_StakeholderName,
-                            'ContactInfo': self.lineEdit_Stk_ContactInfo,
-                            'IsCustomer': self.checkBox_IsCustomer,
-                            'IsSupplier': self.checkBox_IsSupplier,
-                            'IsEmployee': self.checkBox_IsEmployee,
-                            'OtherRoles': "None",
-                            'AmountPayable': self.lineEdit_Stk_AmountPayable,
-                            'AmountReceivable': self.lineEdit_Stk_AmountReceivable,
-                            'Notes': self.lineEdit_Stk_Notes,
-                            'ReminderNote': self.lineEdit_Stk_ReminderNote,
-                            'ReminderDateTime': self.lineEdit_Stk_ID_ReminderDateTime,
-                            'ReminderScript': "None"
-                        }
-                        # Add more instances as needed
-                    ]
-                }
                 self.dbAction_dump_in_json(self.model_stakeholder , "tmp_model_stakeholder.json")
-
+                self.dbAction_json_to_sql('tmp_model_stakeholder.json', p_dml="insert")
+       
+                status, message = self.dbAction_execute('tmp_to_execute.sql', self.conn)
+                if status < 0:
+                    self.show_message("Not Saved", message)
+                else:
+                    self.statusBar().showMessage(message)                
+                
             if p_actionName=="actionFilterRecord":
                 pass
         elif self.current_screen=="Transaction":
@@ -1067,6 +1178,44 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 invNumber=self.lineEdit_trans_sale_InvoiceNumber.text()
                 self.preview_Invoice_create( invNumber, 'tmp_trans.htm')
                 self.preview_Invoice_live(self.textBrowser_InvoicePreview, 'tmp_trans.htm')
+
+
+    def dbAction_json_to_sql(self, p_file, p_dml="insert", p_param={}, p_sql_file='tmp_to_execute.sql'):
+        try:
+            # Read the JSON file
+            with open(p_file, 'r') as file:
+                json_data = json.load(file)
+            
+            table = json_data.get('table')
+            data = json_data.get('data')[0]  # assuming one record for simplicity
+
+            # Generate SQL query based on the DML type
+            if p_dml == "insert":
+                columns = ", ".join(data.keys())
+                values = ", ".join([f"'{val}'" for val in data.values()])
+                sql_query = f"INSERT INTO {table} ({columns}) VALUES ({values});"
+
+            elif p_dml == "delete":
+                where_clause = " AND ".join([f"{key} = '{value}'" for key, value in p_param.items()])
+                sql_query = f"DELETE FROM {table} WHERE {where_clause};"
+
+            elif p_dml == "update":
+                set_clause = ", ".join([f"{key} = '{value}'" for key, value in data.items()])
+                where_clause = " AND ".join([f"{key} = '{value}'" for key, value in p_param.items()])
+                sql_query = f"UPDATE {table} SET {set_clause} WHERE {where_clause};"
+
+            else:
+                return "Unsupported DML operation."
+
+            # Save the SQL query to a SQL file
+            with open(p_sql_file, 'w') as sql_file:
+                sql_file.write(sql_query)
+
+            print(sql_query)
+            return sql_query
+
+        except Exception as e:
+            return f"An error occurred: {e}"
 
 
     def preview_Invoice_live(self, p_textBrowser, p_file):
@@ -1139,38 +1288,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print(f"Database error: {e}")
         except Exception as e:
             print(f"An error occurred: {e}")
-
-
-    def dbAction_dump_in_json1(self, p_dictionary, p_file):
-        try:
-            if not isinstance(p_dictionary, dict):
-                print("Input data is not a dictionary.")
-                return
-
-            for key in ['table', 'screen', 'data']:
-                if key not in p_dictionary:
-                    print(f"Key {key} not found in the dictionary.")
-                    return
-                if key == 'data':
-                    if not isinstance(p_dictionary[key], list):
-                        print("Model data for data is not a list.")
-                        return
-                    for i, instance in enumerate(p_dictionary[key]):
-                        if not isinstance(instance, dict):
-                            print(f"Instance {i} in data is not a dictionary.")
-                            return
-                        for field, widget in instance.items():
-                            if isinstance(widget, QLineEdit):
-                                instance[field] = widget.text()
-                            # Add similar conditions for other widget types like QCheckBox, QComboBox, etc.
-
-            with open(p_file, 'w') as f:
-                json.dump(p_dictionary, f)
-            print("Data dumped successfully in JSON.")
-        except Exception as e:
-            print(f"An error occurred while dumping data to JSON: {e}")
-
-
 
     def dbAction_dump_in_json(self, p_dictionary, p_file):
         try:
