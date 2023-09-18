@@ -14,7 +14,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
+<<<<<<< HEAD
         MainWindow.resize(1204, 694)
+=======
+        MainWindow.resize(1204, 719)
+>>>>>>> 11fb89c6697f8ace171ba2c3a7656041901480a3
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -785,7 +789,11 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionRollback)
 
         self.retranslateUi(MainWindow)
+<<<<<<< HEAD
         self.tabWidget.setCurrentIndex(1)
+=======
+        self.tabWidget.setCurrentIndex(0)
+>>>>>>> 11fb89c6697f8ace171ba2c3a7656041901480a3
         self.tab_trans.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         MainWindow.setTabOrder(self.lineEdit_Stk_StakeholderID, self.lineEdit_Stk_StakeholderName)
