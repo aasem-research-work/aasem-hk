@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1204</width>
-    <height>815</height>
+    <height>694</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@
        <enum>QTabWidget::West</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_Transaction">
        <attribute name="title">
@@ -667,6 +667,9 @@
              </item>
              <item row="0" column="1">
               <widget class="QCheckBox" name="checkBox_IsCustomer">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string>Customer</string>
                </property>
@@ -674,6 +677,9 @@
              </item>
              <item row="0" column="2">
               <widget class="QCheckBox" name="checkBox_IsSupplier">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string>Supplier</string>
                </property>
@@ -681,6 +687,9 @@
              </item>
              <item row="0" column="3">
               <widget class="QCheckBox" name="checkBox_IsEmployee">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string>Employee</string>
                </property>
@@ -1370,7 +1379,7 @@
     </property>
     <addaction name="actionNewRecord"/>
     <addaction name="actionDuplicateRecord"/>
-    <addaction name="actionLoad_Draft"/>
+    <addaction name="actionLoadDraft"/>
     <addaction name="separator"/>
     <addaction name="actionEdit"/>
     <addaction name="actionSave"/>
@@ -1423,7 +1432,7 @@
    </attribute>
    <addaction name="actionNewRecord"/>
    <addaction name="actionDuplicateRecord"/>
-   <addaction name="actionLoad_Draft"/>
+   <addaction name="actionLoadDraft"/>
    <addaction name="actionEdit"/>
    <addaction name="separator"/>
    <addaction name="actionSave"/>
@@ -1540,7 +1549,7 @@
     <string>Save</string>
    </property>
   </action>
-  <action name="actionLoad_Draft">
+  <action name="actionLoadDraft">
    <property name="icon">
     <iconset resource="res_main.qrc">
      <normaloff>:/icon/Draft</normaloff>:/icon/Draft</iconset>

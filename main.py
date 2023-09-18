@@ -1,3 +1,4 @@
+import PyQt5 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem,QLineEdit, QCheckBox, QComboBox, QTreeWidgetItem
 from PyQt5.QtWidgets import QStatusBar,QMessageBox
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QWidget, QVBoxLayout, QTreeWidgetItem
@@ -14,7 +15,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
+
         self.current_screen="None"
+        self.actionName="None"
         self.database="db/sample_computer.db"
         self.manubar_actions("actionCancel")
         self.global_dictionary={"currentTab":3,
@@ -72,7 +75,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 # Add more instances as needed
             ]
         }
-
+        self.lock_for_edit(self.model_stakeholder, True)
         # Model for Inventory
         self.model_inventory = {
             'table': 'inventory',
@@ -102,7 +105,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 }
                 # Add more instances as needed
             ]
-        }
+        }  
+        self.lock_for_edit(self.model_inventory, True)
 
         # Model for Transaction
         self.model_transaction = {
@@ -130,7 +134,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 # Add more instances as needed
             ]
         }
-
+        #self.lock_for_edit(self.model_transaction, True)
+       
+       
         # Create a dictionary mapping the widgets to their respective column indices
 
         self.dictionary_inventory_enrich_form_via_tableWidget={
@@ -187,7 +193,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.lineEdit_Stk_StakeholderID:0,
             self.lineEdit_Stk_StakeholderName: 1,
             self.lineEdit_Stk_ContactInfo: 2,
-
             self.checkBox_IsCustomer: 3,
             self.checkBox_IsSupplier: 4,
             self.checkBox_IsEmployee: 5,
@@ -227,11 +232,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Manu-bar
         self.actionNewRecord.triggered.connect(lambda: self.manubar_actions("actionNewRecord"))
         self.actionDuplicateRecord.triggered.connect(lambda: self.manubar_actions("actionDuplicateRecord"))
-        self.actionLoad_Draft.triggered.connect(lambda: self.manubar_actions("actionLoad_Draft"))
 
         self.actionEdit.triggered.connect(lambda: self.manubar_actions("actionEdit"))
         self.actionSave.triggered.connect(lambda: self.manubar_actions("actionSave"))
         self.actionCancel.triggered.connect(lambda: self.manubar_actions("actionCancel"))
+        self.actionLoadDraft.triggered.connect(lambda: self.manubar_actions("actionLoadDraft"))
 
         self.actionFilterRecord.triggered.connect(lambda: self.manubar_actions("actionFilterRecord"))
 
@@ -958,6 +963,36 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         p_table.setRowCount(0)
 
 
+    # The lock_for_edit function
+    def lock_for_edit(self, p_dictionary, p_mode=True):
+        try:
+            # Access the data key in the dictionary which holds another dictionary of widget names and their instances
+            data_list = p_dictionary.get('data', [])
+            
+            if not data_list:
+                print("No data found in the provided dictionary.")
+                return
+            
+            # Loop through the data dictionary to get the widget instances
+            for data_dict in data_list:
+                for key, widget in data_dict.items():
+                    #print(f"Debug: Processing key {key}, widget {widget}")
+                    
+                    # Check if the widget has a setReadOnly method (i.e., it's an input widget like QLineEdit)
+                    if hasattr(widget, 'setReadOnly'):
+                        widget.setReadOnly(p_mode)
+                    elif isinstance(widget, PyQt5.QtWidgets.QCheckBox):
+                        widget.setEnabled(not p_mode)
+                    else:
+                        print(f"Warning: The widget for key {key} doesn't support locking for edit.")
+        
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+
+
+
+
 
     def dbAction_execute(self, p_file, p_conn):
         try:
@@ -1015,39 +1050,39 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Create a dictionary mapping actions to the menu items they should enable or disable
         menuDict = {
             "actionNewRecord": {
-                "enable": ["actionLoad_Draft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
+                "enable": ["actionLoadDraft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
                 "disable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"]
             },
             "actionDuplicateRecord": {
-                "enable": ["actionLoad_Draft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
+                "enable": ["actionLoadDraft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
                 "disable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"]
             },
             "actionEdit": {
-                "enable": ["actionLoad_Draft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
+                "enable": ["actionLoadDraft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
                 "disable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"]
             },
-            "actionLoad_Draft": {
-                "enable": ["actionLoad_Draft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
+            "actionLoadDraft": {
+                "enable": ["actionLoadDraft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
                 "disable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"]
             },
             "actionSave": {
-                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoad_Draft", "actionEdit", "actionRollback", "actionCommit"],
+                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoadDraft", "actionEdit", "actionRollback", "actionCommit"],
                 "disable": ["actionSave", "actionCancel"]
             },
             "actionCancel": {
-                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoad_Draft", "actionEdit", "actionRollback", "actionCommit"],
+                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoadDraft", "actionEdit", "actionRollback", "actionCommit"],
                 "disable": ["actionSave", "actionCancel"]
             },
             "actionCommit": {
-                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoad_Draft", "actionEdit", "actionRollback", "actionCommit"],
+                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoadDraft", "actionEdit", "actionRollback", "actionCommit"],
                 "disable": ["actionSave", "actionCancel"]
             },
             "actionRollback": {
-                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoad_Draft", "actionEdit", "actionRollback", "actionCommit"],
+                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoadDraft", "actionEdit", "actionRollback", "actionCommit"],
                 "disable": ["actionSave", "actionCancel"]
             },
             "actionDeleteRecord": {
-                "enable": ["actionLoad_Draft", "actionSave", "actionCancel", "actionRollback", "actionCommit", "actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"],
+                "enable": ["actionLoadDraft", "actionSave", "actionCancel", "actionRollback", "actionCommit", "actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"],
                 "disable": []
             }
         }
@@ -1064,14 +1099,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print(f"Action {p_action} not found in menuDict.")
 
     def manubar_actions(self, p_actionName):
+
         print (self.current_screen,"->",p_actionName)
         self.menuController(p_actionName)
 
         if p_actionName=="actionCommit":
             self.dbAction_commit(self.conn)
+            self.lockEdit(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
+
+            
 
         elif p_actionName=="actionRollback":
+            self.actionName=p_actionName
             self.dbAction_rollback(self.conn)
+            
 
         if self.current_screen=="Inventory":
             self.model_inventory = {
@@ -1104,28 +1145,45 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 ]
             }
             if p_actionName=="actionNewRecord":
+                self.actionName=p_actionName
                 self.clearForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
+                self.lock_for_edit(self.model_inventory, p_mode=False)
             if p_actionName=="actionDuplicateRecord":
+                self.actionName=p_actionName
                 self.duplicateForm(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
+                self.lock_for_edit(self.model_inventory, p_mode=False)
+            if p_actionName=="actionEdit":
+                self.actionName=p_actionName
+                self.lock_for_edit(self.model_inventory, p_mode=False)
             if p_actionName=="actionDeleteRecord":
+                self.actionName=p_actionName
                 self.delete_record(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
             if p_actionName=="actionLoadDraft":
-                print ("loading draft-inventory")
+                self.actionName=p_actionName
+                self.lock_for_edit(self.model_inventory, p_mode=False)
                 self.dbAction_load_from_json(self.model_inventory, "tmp_model_inventory.json")
+            if p_actionName=="actionCancel":
+                self.actionName=p_actionName
+                self.lock_for_edit(self.model_inventory, p_mode=True)
 
             if p_actionName=="actionSave":
+                self.actionName=p_actionName
                 #self.saveForm(self.query_insert_inv, self.dictionary_inventory_enrich_form_via_tableWidget)
                 self.dbAction_dump_in_json(self.model_inventory , "tmp_model_inventory.json")
                 self.dbAction_json_to_sql('tmp_model_inventory.json', p_dml="insert")
                 status, message = self.dbAction_execute('tmp_to_execute.sql', self.conn)
                 if status < 0:
                     self.show_message("Not Saved", message)
+                    self.lock_for_edit(self.model_inventory, p_mode=False)
                 else:
                     self.statusBar().showMessage(message)
-
+                    #self.lock_for_edit(self.model_stakeholder, p_mode=True)
+                    self.lock_for_edit(self.model_inventory, p_mode=True)
 
             if p_actionName=="actionFilterRecord":
-                pass
+                self.actionName=p_actionName
+                self.lock_for_edit(self.model_inventory, p_mode=True)
+
         elif self.current_screen=="Stakeholder":
             self.model_stakeholder = {
                 'table': 'stakeholder',
@@ -1150,15 +1208,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 ]
             }            
             if p_actionName=="actionNewRecord":
+                self.actionName=p_actionName
                 self.clearForm(self.dictionary_stakeholder_enrich_form_via_tableWidget, self.tableWidget_stk)
+                self.lock_for_edit(self.model_stakeholder, p_mode=False)
             if p_actionName=="actionDuplicateRecord":
+                self.actionName=p_actionName
                 self.duplicateForm(self.dictionary_stakeholder_enrich_form_via_tableWidget, self.tableWidget_stk)
+                self.lock_for_edit(self.model_stakeholder, p_mode=False)
+            if p_actionName=="actionEdit":
+                self.actionName=p_actionName
+                self.lock_for_edit(self.model_stakeholder, p_mode=False)
             if p_actionName=="actionDeleteRecord":
+                self.actionName=p_actionName
                 self.delete_record(self.dictionary_stakeholder_enrich_form_via_tableWidget, self.tableWidget_stk)
+                self.lock_for_edit(self.model_stakeholder, p_mode=True)
             if p_actionName=="actionLoadDraft":
+                self.actionName=p_actionName
                 print ("loading draft-Stakeholder")
                 self.dbAction_load_from_json(self.model_stakeholder, "tmp_model_stakeholder.json")
+                self.lock_for_edit(self.model_stakeholder, p_mode=False)
+            if p_actionName=="actionCancel":
+                self.actionName=p_actionName
+                self.lock_for_edit(self.model_stakeholder, p_mode=True)
             if p_actionName=="actionSave":
+                self.actionName=p_actionName
                 #self.saveForm(self.query_insert_stk, self.dictionary_stakeholder_enrich_form_via_tableWidget)      
                 self.dbAction_dump_in_json(self.model_stakeholder , "tmp_model_stakeholder.json")
                 self.dbAction_json_to_sql('tmp_model_stakeholder.json', p_dml="insert")
@@ -1166,18 +1239,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 status, message = self.dbAction_execute('tmp_to_execute.sql', self.conn)
                 if status < 0:
                     self.show_message("Not Saved", message)
+                    self.lock_for_edit(self.model_stakeholder, p_mode=False)
                 else:
-                    self.statusBar().showMessage(message)                
+                    self.statusBar().showMessage(message)  
+                    self.lock_for_edit(self.model_stakeholder, p_mode=True)              
                 
             if p_actionName=="actionFilterRecord":
-                pass
+                self.actionName=p_actionName
+                self.lock_for_edit(self.model_stakeholder, p_mode=True)
+
         elif self.current_screen=="Transaction":
+            self.actionName=p_actionName
             if p_actionName=="actionLoadDraft":
                 print ("loading draft-transactoin")
             if p_actionName=="actionSave":
                 invNumber=self.lineEdit_trans_sale_InvoiceNumber.text()
                 self.preview_Invoice_create( invNumber, 'tmp_trans.htm')
                 self.preview_Invoice_live(self.textBrowser_InvoicePreview, 'tmp_trans.htm')
+        self.statusBar().showMessage(f"Action called: {self.actionName}")
 
 
     def dbAction_json_to_sql(self, p_file, p_dml="insert", p_param={}, p_sql_file='tmp_to_execute.sql'):
