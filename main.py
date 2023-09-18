@@ -1311,6 +1311,47 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def dbAction_json_to_sql(self, p_file, p_dml="insert", p_param={}, p_sql_file='tmp_to_execute.sql'):
+
+        try:
+            # Read the JSON file
+            with open(p_file, 'r') as file:
+                json_data = json.load(file)
+            
+            table = json_data.get('table')
+            data = json_data.get('data')[0]  # assuming one record for simplicity
+
+            # Generate SQL query based on the DML type
+            if p_dml == "insert":
+                columns = ", ".join(data.keys())
+                values = ", ".join([f"'{val}'" if not isinstance(val, bool) else str(val) for val in data.values()])
+                sql_query = f"INSERT INTO {table} ({columns}) VALUES ({values});"
+
+            elif p_dml == "delete":
+                where_clause = " AND ".join([f"{key} = '{value}'" for key, value in p_param.items()])
+                sql_query = f"DELETE FROM {table} WHERE {where_clause};"
+
+            elif p_dml == "update":
+                set_clause = ", ".join([f"{key} = '{value}'" if not isinstance(value, bool) else f"{key} = {str(value)}" for key, value in data.items()])
+                where_clause = " AND ".join([f"{key} = '{value}'" for key, value in p_param.items()])
+                sql_query = f"UPDATE {table} SET {set_clause} WHERE {where_clause};"
+
+            else:
+                return "Unsupported DML operation."
+
+            # Save the SQL query to a SQL file
+            with open(p_sql_file, 'w') as sql_file:
+                sql_file.write(sql_query)
+
+            print(sql_query)
+            return sql_query
+
+        except Exception as e:
+            return f"An error occurred: {e}"
+
+
+
+
+    def dbAction_json_to_sql_old(self, p_file, p_dml="insert", p_param={}, p_sql_file='tmp_to_execute.sql'):
         # usage for update: self.dbAction_json_to_sql("your_json_file.json", p_dml="update", p_param={"ItemID": "123"})
 
         try:
