@@ -18,6 +18,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.current_screen="None"
         self.actionName="None"
+        self.actionName_Last="None"
+        self.conn=None
+        self.NEED_for_COMMIT_or_ROLLBACK=False
+        self.actionCommit.setEnabled( self.NEED_for_COMMIT_or_ROLLBACK)
+        self.actionRollback.setEnabled( self.NEED_for_COMMIT_or_ROLLBACK)
+
         self.database="db/sample_computer.db"
         self.manubar_actions("actionCancel")
         self.global_dictionary={"currentTab":3,
@@ -991,7 +997,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
 
-
+    def is_conn_commitable(self,p_conn):
+        try:
+            cursor = p_conn.cursor()
+            changed_rows = cursor.execute("SELECT changes()").fetchone()[0]
+            return changed_rows 
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return -1
 
 
     def dbAction_execute(self, p_file, p_conn):
@@ -1021,7 +1034,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             # Commit all the changes made so far
             p_conn.commit()
-            print("All changes committed successfully.")
+            self.NEED_for_COMMIT_or_ROLLBACK=False
             return "Commit successful."
             
         except Exception as e:
@@ -1032,7 +1045,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             # Roll back all the changes made so far
             p_conn.rollback()
-            print("All changes rolled back successfully.")
+            self.NEED_for_COMMIT_or_ROLLBACK=False
             return "Rollback successful."
             
         except Exception as e:
@@ -1050,41 +1063,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Create a dictionary mapping actions to the menu items they should enable or disable
         menuDict = {
             "actionNewRecord": {
-                "enable": ["actionLoadDraft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
+                "enable": ["actionLoadDraft", "actionSave", "actionCancel"],
                 "disable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"]
             },
             "actionDuplicateRecord": {
-                "enable": ["actionLoadDraft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
+                "enable": ["actionLoadDraft", "actionSave", "actionCancel"],
                 "disable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"]
             },
             "actionEdit": {
-                "enable": ["actionLoadDraft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
+                "enable": ["actionLoadDraft", "actionSave", "actionCancel"],
                 "disable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"]
             },
             "actionLoadDraft": {
-                "enable": ["actionLoadDraft", "actionSave", "actionCancel", "actionRollback", "actionCommit"],
+                "enable": ["actionLoadDraft", "actionSave", "actionCancel"],
                 "disable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"]
             },
             "actionSave": {
-                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoadDraft", "actionEdit", "actionRollback", "actionCommit"],
+                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoadDraft", "actionEdit"],
                 "disable": ["actionSave", "actionCancel"]
             },
             "actionCancel": {
-                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoadDraft", "actionEdit", "actionRollback", "actionCommit"],
+                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoadDraft", "actionEdit"],
                 "disable": ["actionSave", "actionCancel"]
             },
             "actionCommit": {
-                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoadDraft", "actionEdit", "actionRollback", "actionCommit"],
+                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoadDraft", "actionEdit"],
                 "disable": ["actionSave", "actionCancel"]
             },
             "actionRollback": {
-                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoadDraft", "actionEdit", "actionRollback", "actionCommit"],
+                "enable": ["actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionLoadDraft", "actionEdit"],
                 "disable": ["actionSave", "actionCancel"]
             },
-            "actionDeleteRecord": {
-                "enable": ["actionLoadDraft", "actionSave", "actionCancel", "actionRollback", "actionCommit", "actionNewRecord", "actionDuplicateRecord", "actionFilterRecord", "actionDeleteRecord", "actionEdit"],
-                "disable": []
-            }
+
         }
 
         # Check if the provided p_action exists in menuDict
@@ -1102,17 +1112,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         print (self.current_screen,"->",p_actionName)
         self.menuController(p_actionName)
-
-        if p_actionName=="actionCommit":
-            self.dbAction_commit(self.conn)
-            self.lockEdit(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
-
-            
-
-        elif p_actionName=="actionRollback":
-            self.actionName=p_actionName
-            self.dbAction_rollback(self.conn)
-            
+        
 
         if self.current_screen=="Inventory":
             self.model_inventory = {
@@ -1155,9 +1155,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if p_actionName=="actionEdit":
                 self.actionName=p_actionName
                 self.lock_for_edit(self.model_inventory, p_mode=False)
-            if p_actionName=="actionDeleteRecord":
-                self.actionName=p_actionName
-                self.delete_record(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
+
             if p_actionName=="actionLoadDraft":
                 self.actionName=p_actionName
                 self.lock_for_edit(self.model_inventory, p_mode=False)
@@ -1166,19 +1164,36 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.actionName=p_actionName
                 self.lock_for_edit(self.model_inventory, p_mode=True)
 
+            if p_actionName=="actionDeleteRecord":
+                itemID= self.lineEdit_inv_ItemID.text()
+                self.actionName=p_actionName
+                self.dbAction_json_to_sql("tmp_model_inventory.json", p_dml="delete", p_param={"ItemID": itemID})
+
+                self.delete_record(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
+                status, message = self.dbAction_execute('tmp_to_execute.sql', self.conn)
+                if status < 0:
+                    self.show_message("Not deleted", message)
+                else:
+                    self.statusBar().showMessage(message)
+                    self.NEED_for_COMMIT_or_ROLLBACK=True
+
             if p_actionName=="actionSave":
                 self.actionName=p_actionName
-                #self.saveForm(self.query_insert_inv, self.dictionary_inventory_enrich_form_via_tableWidget)
                 self.dbAction_dump_in_json(self.model_inventory , "tmp_model_inventory.json")
-                self.dbAction_json_to_sql('tmp_model_inventory.json', p_dml="insert")
+                if self.actionName_Last=="actionEdit":
+                    itemID= self.lineEdit_inv_ItemID.text()
+                    self.dbAction_json_to_sql("tmp_model_inventory.json", p_dml="update", p_param={"ItemID": itemID})
+                elif self.actionName_Last in ["actionNewRecord", 'actionDuplicateRecord']:
+                    self.dbAction_json_to_sql('tmp_model_inventory.json', p_dml="insert")
+                
                 status, message = self.dbAction_execute('tmp_to_execute.sql', self.conn)
                 if status < 0:
                     self.show_message("Not Saved", message)
                     self.lock_for_edit(self.model_inventory, p_mode=False)
                 else:
                     self.statusBar().showMessage(message)
-                    #self.lock_for_edit(self.model_stakeholder, p_mode=True)
                     self.lock_for_edit(self.model_inventory, p_mode=True)
+                    self.NEED_for_COMMIT_or_ROLLBACK=True
 
             if p_actionName=="actionFilterRecord":
                 self.actionName=p_actionName
@@ -1219,9 +1234,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.actionName=p_actionName
                 self.lock_for_edit(self.model_stakeholder, p_mode=False)
             if p_actionName=="actionDeleteRecord":
+                StakeholderID= self.lineEdit_Stk_StakeholderID.text()
                 self.actionName=p_actionName
+                self.dbAction_json_to_sql("tmp_model_stakeholder.json", p_dml="delete", p_param={"StakeholderID": StakeholderID})
                 self.delete_record(self.dictionary_stakeholder_enrich_form_via_tableWidget, self.tableWidget_stk)
-                self.lock_for_edit(self.model_stakeholder, p_mode=True)
+           
+                status, message = self.dbAction_execute('tmp_to_execute.sql', self.conn)
+                if status < 0:
+                    self.show_message("Not deleted", message)
+                else:
+                    self.statusBar().showMessage(message)
+                    self.NEED_for_COMMIT_or_ROLLBACK=True
+
             if p_actionName=="actionLoadDraft":
                 self.actionName=p_actionName
                 print ("loading draft-Stakeholder")
@@ -1230,19 +1254,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if p_actionName=="actionCancel":
                 self.actionName=p_actionName
                 self.lock_for_edit(self.model_stakeholder, p_mode=True)
+
             if p_actionName=="actionSave":
-                self.actionName=p_actionName
-                #self.saveForm(self.query_insert_stk, self.dictionary_stakeholder_enrich_form_via_tableWidget)      
+                self.actionName=p_actionName     
                 self.dbAction_dump_in_json(self.model_stakeholder , "tmp_model_stakeholder.json")
-                self.dbAction_json_to_sql('tmp_model_stakeholder.json', p_dml="insert")
-       
+                if self.actionName_Last=="actionEdit":
+                    StakeholderID= self.lineEdit_Stk_StakeholderID.text()
+                    self.dbAction_json_to_sql("tmp_model_stakeholder.json", p_dml="update", p_param={"StakeholderID": StakeholderID})
+                elif self.actionName_Last in ["actionNewRecord", 'actionDuplicateRecord']:
+                    self.dbAction_json_to_sql('tmp_model_stakeholder.json', p_dml="insert")
+
                 status, message = self.dbAction_execute('tmp_to_execute.sql', self.conn)
                 if status < 0:
                     self.show_message("Not Saved", message)
                     self.lock_for_edit(self.model_stakeholder, p_mode=False)
                 else:
                     self.statusBar().showMessage(message)  
-                    self.lock_for_edit(self.model_stakeholder, p_mode=True)              
+                    self.lock_for_edit(self.model_stakeholder, p_mode=True)  
+                    self.NEED_for_COMMIT_or_ROLLBACK=True            
                 
             if p_actionName=="actionFilterRecord":
                 self.actionName=p_actionName
@@ -1259,7 +1288,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.statusBar().showMessage(f"Action called: {self.actionName}")
 
 
+        ### Commit and Rollback ###
+        if p_actionName=="actionCommit":
+            self.dbAction_commit(self.conn)
+            #self.lockEdit(self.dictionary_inventory_enrich_form_via_tableWidget, self.tableWidget_inv)
+            self.actionCommit.setEnabled(False)
+            self.actionRollback.setEnabled(False)
+        elif p_actionName=="actionRollback":
+            self.actionName=p_actionName
+            self.dbAction_rollback(self.conn)
+            self.actionCommit.setEnabled(False)
+            self.actionRollback.setEnabled(False)            
+
+ 
+        self.actionCommit.setEnabled( self.NEED_for_COMMIT_or_ROLLBACK)
+        self.actionRollback.setEnabled( self.NEED_for_COMMIT_or_ROLLBACK)
+  
+
+
+        self.actionName_Last=p_actionName
+
+
+
     def dbAction_json_to_sql(self, p_file, p_dml="insert", p_param={}, p_sql_file='tmp_to_execute.sql'):
+        # usage for update: self.dbAction_json_to_sql("your_json_file.json", p_dml="update", p_param={"ItemID": "123"})
+
         try:
             # Read the JSON file
             with open(p_file, 'r') as file:

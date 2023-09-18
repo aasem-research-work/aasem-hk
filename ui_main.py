@@ -688,7 +688,8 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.toolBar = QtWidgets.QToolBar(MainWindow)
-        self.toolBar.setIconSize(QtCore.QSize(36, 36))
+        self.toolBar.setIconSize(QtCore.QSize(48, 48))
+        self.toolBar.setFloatable(True)
         self.toolBar.setObjectName("toolBar")
         MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.actionDuplicateRecord = QtWidgets.QAction(MainWindow)
@@ -785,7 +786,7 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionRollback)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(2)
         self.tab_trans.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         MainWindow.setTabOrder(self.lineEdit_Stk_StakeholderID, self.lineEdit_Stk_StakeholderName)

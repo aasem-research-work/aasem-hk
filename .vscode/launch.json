@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Python: PyQt",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/your_script_name.py",
+        "console": "integratedTerminal",
+      }
+    ]
+  }
+  
