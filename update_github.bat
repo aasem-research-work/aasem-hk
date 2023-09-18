@@ -21,14 +21,16 @@ if "!repo!"=="" set repo=%default_repo%
 set /p comment=Comments: %default_comment% (Hit Enter, or enter new)
 if "!comment!"=="" set comment=%default_comment%
 
-:: Initialize git (if necessary) and add remote (will fail silently if already exists)
-git init
-git remote add origin %repo% 2> nul
+:: Initialize git (if necessary) and set remote (will update if already exists)
+if not exist .git (
+    git init
+)
+git remote set-url origin %repo%
 
 :: Add, commit, and push changes to GitHub
 git add .
 git commit -m "%comment%"
-git push -u origin master
+git push -u origin HEAD
 
 echo Done.
 
