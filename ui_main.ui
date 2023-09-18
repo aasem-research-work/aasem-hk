@@ -7,11 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1204</width>
-<<<<<<< HEAD
-    <height>694</height>
-=======
-    <height>719</height>
->>>>>>> 11fb89c6697f8ace171ba2c3a7656041901480a3
+    <height>815</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,11 +35,7 @@
        <enum>QTabWidget::West</enum>
       </property>
       <property name="currentIndex">
-<<<<<<< HEAD
-       <number>1</number>
-=======
        <number>0</number>
->>>>>>> 11fb89c6697f8ace171ba2c3a7656041901480a3
       </property>
       <widget class="QWidget" name="tab_Transaction">
        <attribute name="title">
